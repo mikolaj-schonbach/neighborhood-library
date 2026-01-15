@@ -1,0 +1,111 @@
+# DOKUMENTACJA PROJEKTOWA: Neighborhood Library (MVP)
+Data generowania: 19.11.2024
+Cel: Ustalenie wymagań do PRD (Product Requirements Document)
+
+---
+
+## 1. OPIS PROJEKTU (Wsad)
+
+**Główny problem:** Manualne przeszukiwanie zbiorów bibliotecznych jest czasochłonne.
+**Rozwiązanie:** Aplikacja umożliwiająca przeszukiwanie i rezerwowanie książek/czasopism.
+
+**Najmniejszy zestaw funkcjonalności (MVP):**
+- Role: Admin, User.
+- Admin: Zarządza książkami (dodaj/usuń), aktywuje użytkowników.
+- User: Rejestracja (wymaga aktywacji), wyszukiwanie, rezerwacja, profil z listą wypożyczeń.
+- System: Powiadomienia wewnętrzne (terminy, dostępność).
+
+**Wykluczone z MVP:**
+- Płatności, Multimedia (okładki), Recenzje, Wiadomości user-to-user.
+
+**Kryteria sukcesu:**
+- 80% użytkowników loguje się raz na kwartał.
+- 70% użytkowników wypożycza min. 1 książkę na kwartał.
+
+---
+
+## 2. RUNDY USTALEŃ (Q&A)
+
+### Runda 1: Podstawowe procesy
+**Decyzje:**
+1. **Wydawanie/Zwrot:** Realizowane manualnie przez Admina w systemie (przyciski "Wydaj książkę", "Przyjmij zwrot").
+2. **Aktywacja konta:** Użytkownik rejestruje się -> Komunikat "Udaj się do biblioteki" -> Admin weryfikuje tożsamość i klika "Aktywuj".
+3. **Pola książki:** Tytuł, Autorzy, Rodzaj, Kategoria, ISBN, Rok wydania. Brak okładek.
+4. **Komunikacja:** Brak e-maili. Tylko powiadomienia wewnątrz aplikacji (zakładka z ikoną wykrzyknika).
+5. **Przetrzymania:** Brak kar finansowych. Admin manualnie blokuje (banuje) konto użytkownika.
+6. **Zasada kolejki:** Kto pierwszy, ten lepszy. Brak rezerwacji na zapas.
+7. **Info o bibliotece:** Statyczny modal/stopka z adresem i godzinami (dostępne też dla niezalogowanych).
+8. **Limity:** Max czas: 30 dni. Limit sztuk: 3.
+9. **Analityka:** Logi systemowe w bazie danych.
+
+### Runda 2: Szczegóły techniczne
+**Decyzje:**
+1. **Nierozliczone rezerwacje:** Admin ma przycisk "Anuluj rezerwację" (ręczne zwolnienie blokady).
+2. **Wiele egzemplarzy:** Każdy fizyczny egzemplarz to osobny rekord w bazie (unikalne ID). Tytuł dubluje się na liście.
+3. **Reset hasła:** Wykonywany tylko przez Admina (nadanie hasła tymczasowego ustnie).
+4. **Dane rejestracji:** Imię, Nazwisko, Login, Hasło, Telefon, Adres.
+5. **Kategorie:** Lista zamknięta, edytowalna przez Admina. Wybór z listy rozwijanej.
+6. **Dashboard Użytkownika:** Sekcja "Moje książki" + Lista wszystkich książek poniżej.
+7. **Automatyzacja komunikatów:** System sam generuje powiadomienia przy zmianie statusu (Wypożyczono/Termin minął).
+8. **Wyszukiwarka:** Pola: Tytuł, Autor + Filtr Kategorii.
+9. **Historia:** Użytkownik widzi tylko aktywne wypożyczenia (brak historii archiwalnej).
+10. **Identyfikacja egzemplarza:** Unikalny numer inwentarzowy wpisywany fizycznie w książce.
+
+### Runda 3: Logika biznesowa i spójność
+**Decyzje:**
+1. **Usuwanie kategorii:** Zablokowane, jeśli przypisane są do niej książki.
+2. **Limit 3 sztuk:** Sumuje Wypożyczenia + Rezerwacje.
+3. **Edycja danych usera:** User zmienia tylko hasło. Resztę danych zmienia Admin.
+4. **Numer inwentarzowy:** Generowany automatycznie przez system (auto-inkrementacja).
+5. **Usuwanie książki:** Zablokowane, jeśli książka jest wypożyczona/zarezerwowana.
+6. **Lista użytkowników:** Domyślne sortowanie: Nieaktywni na górze (wyróżnieni kolorem).
+7. **Statusy na liście:** Wyraźna etykieta na kafelku książki (Dostępna / Wypożyczona).
+8. **Dashboard Admina:** Tablica zadań (liczniki: do aktywacji, do wydania, po terminie).
+9. **Wiadomości:** User usuwa przeczytane ręcznie.
+10. **RWD:** Aplikacja responsywna (mobile dla usera, desktop dla admina).
+
+### Runda 4: Obsługa błędów i stany brzegowe
+**Decyzje:**
+1. **Anulowanie przez Usera:** User może anulować własną rezerwację przed odbiorem.
+2. **Widok zbanowanego:** Widzi komunikat o blokadzie ORAZ listę wypożyczonych książek (by wiedział co oddać).
+3. **Duża ilość danych:** Paginacja (stronicowanie) wyników.
+4. **Prolongata:** BRAK w MVP.
+5. **Hasło:** Walidacja min. 8 znaków.
+6. **Sortowanie domyślne:** Alfabetycznie po tytule.
+7. **Puste wyniki:** Komunikat "Nie znaleziono" + przycisk "Wyczyść filtry".
+8. **Sesja:** Auto-wylogowanie po 30 min bezczynności.
+9. **Usuwanie rekordów:** Hard delete (trwałe usunięcie z bazy).
+10. **Format daty:** DD.MM.RRRR.
+
+### Runda 5: Interakcje i administracja
+**Decyzje:**
+1. **Filtry:** Działają łącznie (Tekst AND Kategoria).
+2. **Puste kategorie:** Ukryte na liście filtrów dla użytkownika.
+3. **Kolejność rezerwacji (Admin):** Chronologicznie od najstarszej.
+4. **Usuwanie konta:** Tylko przez Admina (po weryfikacji braku wypożyczeń).
+5. **Admin vs Admin:** Admin nie może usunąć własnego konta.
+6. **Status wiadomości:** Rozróżnienie przeczytane/nieprzeczytane (pogrubienie).
+7. **Regulamin:** Skrócony regulamin (limity) w modalu "O bibliotece".
+8. **Limity znaków:** Ograniczenia techniczne w bazie dla pól tekstowych.
+9. **Raporty:** Brak wizualnych wykresów. Dane wyciągane SQL-em z bazy.
+10. **Potwierdzenia:** Modal "Czy na pewno?" dla akcji destrukcyjnych.
+
+---
+
+## 3. PODSUMOWANIE WYMAGAŃ (Baza do PRD)
+
+### Główne wymagania funkcjonalne
+* **Moduł Użytkownika:** Rejestracja/Logowanie, Przeglądanie (RWD), Rezerwacja (z opcją anulowania), Dashboard (stan bieżący), Powiadomienia, Profil (zmiana hasła).
+* **Moduł Admina:** CRUD Książek i Kategorii, Aktywacja/Blokada Użytkowników, Obsługa Wypożyczeń/Zwrotów, Dashboard operacyjny.
+
+### Kluczowe ścieżki (User Stories)
+* **Rejestracja:** Formularz -> Wizyta w bibliotece -> Aktywacja przez Admina.
+* **Wypożyczenie:** Rezerwacja online -> Odbiór (Admin klika "Wydaj") -> Zwrot (Admin klika "Przyjmij").
+* **Konsekwencje:** Przetrzymanie -> Blokada konta przez Admina -> Konieczność wizyty wyjaśniającej.
+
+### Mierniki sukcesu (KPI)
+* **Retencja:** 80% userów loguje się 1x/kwartał (źródło: logi logowania).
+* **Adopcja:** 70% userów wypożycza 1x/kwartał (źródło: historia operacji).
+
+### Status
+Wszystkie kluczowe mechanizmy dla MVP zostały zdefiniowane. Projekt gotowy do fazy tworzenia właściwego dokumentu PRD.

@@ -1,0 +1,571 @@
+Spoko, skoro znasz Javę i robisz to solo, Spring Boot ma jak najbardziej sens – tylko warto go ułożyć tak, żeby Ci nie urósł „god object controller”. Poniżej masz propozycję **konkretnej architektury** pod ten PRD: moduły (bounded contexts), pakiety, encje i gdzie trzymać reguły biznesowe.
+
+---
+
+## 1. Ogólny kształt aplikacji
+
+**Monolit** Spring Boot (jeden moduł Maven/Gradle), ale **porządek pakietami „package-by-feature”**:
+
+* `user` – użytkownicy, role, logowanie, ban, rejestracja, aktywacja
+* `catalog` – tytuły, egzemplarze, kategorie, wyszukiwarka
+* `circulation` – rezerwacje, wypożyczenia, obsługa obiegu
+* `messaging` – wiadomości/powiadomienia wewnętrzne
+* `admin` – dashboard i widoki przekrojowe dla admina
+* `info` – statyczne „o bibliotece”
+* `metrics` (opcjonalnie) – logi logowań / raporty kwartalne
+* `config`, `common` – rzeczy wspólne
+
+Struktura katalogów:
+
+```text
+src/main/java/pl/yourorg/library
+ ├─ config
+ ├─ common
+ ├─ user
+ ├─ catalog
+ ├─ circulation
+ ├─ messaging
+ ├─ admin
+ ├─ info
+ └─ metrics   (opcjonalnie)
+```
+
+W każdym z kontekstów: `domain`, `repository`, `service`, `web` (opcjonalnie `dto`).
+
+---
+
+## 2. Struktura pakietów – propozycja
+
+```text
+pl.yourorg.library
+ ├─ config
+ │   ├─ SecurityConfig.java
+ │   ├─ WebConfig.java
+ │   └─ SchedulingConfig.java (@EnableScheduling)
+ ├─ common
+ │   ├─ BaseEntity.java          // id, version
+ │   ├─ AuditableEntity.java     // createdAt, createdBy, updatedAt...
+ │   ├─ exception
+ │   │   ├─ NotFoundException.java
+ │   │   ├─ BusinessException.java
+ │   │   └─ GlobalExceptionHandler.java (@ControllerAdvice)
+ │   └─ util
+ ├─ user
+ │   ├─ domain
+ │   │   ├─ User.java
+ │   │   ├─ Role.java
+ │   │   ├─ AccountStatus.java   // INACTIVE, ACTIVE, BANNED
+ │   ├─ repository
+ │   │   └─ UserRepository.java
+ │   ├─ service
+ │   │   ├─ UserService.java
+ │   │   └─ AuthService.java     // logowanie, zapisy logów
+ │   └─ web
+ │       ├─ RegistrationController.java
+ │       ├─ LoginController.java
+ │       └─ AdminUserController.java  // aktywacja, ban, reset hasła
+ ├─ catalog
+ │   ├─ domain
+ │   │   ├─ Category.java
+ │   │   ├─ BookTitle.java
+ │   │   ├─ BookItem.java
+ │   │   ├─ BookType.java        // BOOK, MAGAZINE
+ │   │   └─ BookStatus.java      // AVAILABLE, RESERVED, LOANED, UNAVAILABLE
+ │   ├─ repository
+ │   │   ├─ CategoryRepository.java
+ │   │   ├─ BookTitleRepository.java
+ │   │   └─ BookItemRepository.java
+ │   ├─ service
+ │   │   └─ CatalogService.java  // CRUD + wyszukiwanie
+ │   └─ web
+ │       ├─ CatalogController.java       // wyszukiwarka użytkownika
+ │       └─ AdminCatalogController.java  // CRUD admina
+ ├─ circulation
+ │   ├─ domain
+ │   │   ├─ Loan.java
+ │   │   ├─ Reservation.java
+ │   │   ├─ LoanStatus.java         // ACTIVE, RETURNED
+ │   │   └─ ReservationStatus.java  // ACTIVE, CANCELLED, FULFILLED
+ │   ├─ repository
+ │   │   ├─ LoanRepository.java
+ │   │   └─ ReservationRepository.java
+ │   ├─ service
+ │   │   └─ CirculationService.java // reguły: 3 szt., zmiany statusów
+ │   └─ web
+ │       ├─ UserCirculationController.java  // „Moje książki”
+ │       └─ AdminCirculationController.java // rezerwacje, wydanie, zwroty
+ ├─ messaging
+ │   ├─ domain
+ │   │   ├─ Message.java
+ │   │   └─ MessageType.java   // LOAN_CREATED, DUE_SOON, OVERDUE, ACCOUNT_BLOCKED...
+ │   ├─ repository
+ │   │   └─ MessageRepository.java
+ │   ├─ service
+ │   │   ├─ MessagingService.java
+ │   │   └─ NotificationScheduler.java // @Scheduled – terminy zwrotów
+ │   └─ web
+ │       └─ MessageController.java     // lista wiadomości, oznaczanie jako przeczytane
+ ├─ admin
+ │   └─ web
+ │       └─ DashboardController.java   // liczniki PRD: nowi userzy, rezerwacje, przetrzymane
+ ├─ info
+ │   └─ web
+ │       └─ AboutController.java       // „O bibliotece”
+ └─ metrics   // opcjonalne
+     ├─ domain
+     │   └─ LoginEvent.java
+     ├─ repository
+     │   └─ LoginEventRepository.java
+     └─ service
+         └─ MetricsService.java        // zapytania SQL pod retention/adoption
+```
+
+---
+
+## 3. Encje domenowe – jak odwzorować PRD
+
+### 3.1. Użytkownicy i role (`user.domain`)
+
+```java
+@Entity
+@Table(name = "users")
+public class User extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false, length = 50)
+    private String login;          // używane do logowania
+
+    @Column(nullable = false)
+    private String passwordHash;   // BCrypt
+
+    @Column(nullable = false, length = 100)
+    private String firstName;
+
+    @Column(nullable = false, length = 100)
+    private String lastName;
+
+    @Column(nullable = false, length = 20)
+    private String phone;
+
+    @Column(nullable = false, length = 255)
+    private String address;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AccountStatus status;  // INACTIVE, ACTIVE, BANNED
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+       name = "user_roles",
+       joinColumns = @JoinColumn(name = "user_id"),
+       inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+}
+```
+
+```java
+@Entity
+@Table(name = "roles")
+public class Role {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique=true, nullable=false, length=50)
+    private String name; // "ROLE_ADMIN", "ROLE_USER"
+}
+
+public enum AccountStatus {
+    INACTIVE,   // po rejestracji online
+    ACTIVE,     // po aktywacji przez admina
+    BANNED      // ban – user widzi tylko swoje zwroty
+}
+```
+
+**Reguły z PRD:**
+
+* Rejestracja → `User` ze statusem `INACTIVE`.
+* Administrator zmienia `status` na `ACTIVE` (US-002).
+* Ban → `status = BANNED` + wysłanie `Message` (US-016).
+* User **nie może edytować** imienia/nazwiska/adresu – tylko hasło.
+  To wymuszasz na poziomie UI i kontrolera (formularz profilu z tylko polami hasła).
+
+---
+
+### 3.2. Katalog: kategorie, tytuły, egzemplarze (`catalog.domain`)
+
+Rozdzielam **tytuł** (metadane) i **egzemplarz** (fizyczny obiekt) – idealnie pod PRD z numerem inwentarzowym.
+
+```java
+@Entity
+@Table(name = "categories", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+public class Category {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable=false, length=100)
+    private String name;
+}
+```
+
+```java
+@Entity
+@Table(name = "book_titles")
+public class BookTitle extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable=false)
+    private String title;
+
+    @Column(nullable=false, length=255)
+    private String authors; // np. "Adam Mickiewicz; Jan Nowak"
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=20)
+    private BookType type;  // BOOK, MAGAZINE
+
+    @ManyToOne(optional=false)
+    private Category category;
+
+    @Column(length=20)
+    private String isbn;
+
+    private Integer publicationYear;
+}
+```
+
+```java
+@Entity
+@Table(name = "book_items")
+public class BookItem extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable=false, unique=true, length=30)
+    private String inventoryNumber; // numer inwentarzowy np. "NB-000001"
+
+    @ManyToOne(optional=false)
+    private BookTitle title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=20)
+    private BookStatus status; // AVAILABLE, RESERVED, LOANED, UNAVAILABLE
+}
+```
+
+```java
+public enum BookType { BOOK, MAGAZINE }
+
+public enum BookStatus {
+    AVAILABLE,  // Dostępna
+    RESERVED,   // Zarezerwowana
+    LOANED,     // Wypożyczona
+    UNAVAILABLE // „Niedostępna” – np. zaginęła, w naprawie
+}
+```
+
+**Reguły z PRD:**
+
+* Nowa książka: `BookItem.status = AVAILABLE` (US-006).
+* Usunięcie kategorii z książkami → w `CategoryService` sprawdzasz czy istnieje `BookTitle` powiązany – jeśli tak, rzucasz `BusinessException` (US-007).
+* Usuwanie książki: możesz usunąć `BookItem` **tylko jeśli** `status` nie jest `RESERVED` ani `LOANED` (US-008).
+
+---
+
+### 3.3. Obieg książek – rezerwacje i wypożyczenia (`circulation.domain`)
+
+```java
+@Entity
+@Table(name = "reservations")
+public class Reservation extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional=false)
+    private User user;
+
+    @ManyToOne(optional=false)
+    private BookItem item;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=20)
+    private ReservationStatus status; // ACTIVE, CANCELLED, FULFILLED
+}
+
+public enum ReservationStatus {
+    ACTIVE,
+    CANCELLED,
+    FULFILLED   // zrealizowana – powstało wypożyczenie
+}
+```
+
+```java
+@Entity
+@Table(name = "loans")
+public class Loan extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional=false)
+    private User user;
+
+    @ManyToOne(optional=false)
+    private BookItem item;
+
+    @Column(nullable=false)
+    private LocalDate loanDate;
+
+    @Column(nullable=false)
+    private LocalDate dueDate;   // loanDate + 30 dni
+
+    private LocalDate returnDate; // null gdy wciąż wypożyczona
+}
+```
+
+> `LoanStatus` można policzyć na bieżąco:
+>
+> * aktywne = `returnDate == null`,
+> * przetrzymane = `returnDate == null && dueDate < today`.
+
+**Kluczowe reguły (miejsce: `CirculationService`)**
+
+1. **Rezerwacja książki przez usera (US-010)**
+
+Metoda np. `reserveBook(Long bookItemId, User currentUser)`:
+
+* Sprawdź:
+
+  * `BookItem.status == AVAILABLE` → inaczej exception.
+  * użytkownik ma status `ACTIVE` i nie jest `BANNED`.
+  * `countActiveLoansAndReservations(user) < 3`.
+
+`countActiveLoansAndReservations`:
+
+* aktywne wypożyczenia: `loanRepository.countByUserAndReturnDateIsNull(user)`
+
+* aktywne rezerwacje: `reservationRepository.countByUserAndStatus(ReservationStatus.ACTIVE)`
+
+* Jeśli OK:
+
+  * ustaw `BookItem.status = RESERVED`.
+  * utwórz `Reservation` ze statusem `ACTIVE`.
+
+2. **Anulowanie rezerwacji przez usera (US-011)**
+
+`cancelReservation(Long reservationId, User currentUser)`:
+
+* sprawdź, czy rezerwacja należy do usera i ma status `ACTIVE`.
+* ustaw `Reservation.status = CANCELLED`.
+* ustaw `BookItem.status = AVAILABLE`.
+
+3. **Wydanie książki (admin) – wypożyczenie (US-012)**
+
+`issueLoan(Long reservationId, Long adminId)`:
+
+* pobierz `Reservation` (status `ACTIVE`).
+* pobierz `BookItem` z tej rezerwacji (status `RESERVED`).
+* ustaw:
+
+  * `BookItem.status = LOANED`.
+  * `Reservation.status = FULFILLED`.
+  * utwórz `Loan`:
+
+    * `loanDate = today`,
+    * `dueDate = today.plusDays(30)`.
+* wywołaj `MessagingService.sendLoanCreatedMessage(user, loan)`.
+
+4. **Zwrot książki (admin) (US-013)**
+
+`returnBook(Long bookItemId)` albo `returnLoan(Long loanId)`:
+
+* znajdź aktywny `Loan` (returnDate null).
+* ustaw `returnDate = today`.
+* ustaw `BookItem.status = AVAILABLE`.
+
+5. **Anulowanie rezerwacji przez admina (US-014)**
+
+Jak u usera, tylko bez sprawdzania właściciela + logika UI potwierdzająca w modalu.
+
+---
+
+### 3.4. Wiadomości i powiadomienia (`messaging.domain`)
+
+```java
+@Entity
+@Table(name = "messages")
+public class Message extends AuditableEntity {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional=false)
+    private User recipient;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=30)
+    private MessageType type;
+
+    @Column(nullable=false, length=150)
+    private String subject;
+
+    @Column(nullable=false, length=2000)
+    private String body;
+
+    @Column(nullable=false)
+    private boolean read;
+
+    @Column(nullable=false)
+    private boolean deleted; // „usunięte” dla usera
+
+    // createdAt dziedziczone z AuditableEntity
+}
+```
+
+```java
+public enum MessageType {
+    LOAN_CREATED,      // wypożyczenie
+    DUE_SOON,          // zbliżający się termin zwrotu
+    OVERDUE,           // przekroczony termin
+    ACCOUNT_BLOCKED,   // ban
+    SYSTEM
+}
+```
+
+**MessagingService – przykładowe metody:**
+
+* `sendLoanCreatedMessage(User user, Loan loan)`
+* `sendDueSoonMessage(User user, Loan loan)`
+* `sendOverdueMessage(User user, Loan loan)`
+* `sendAccountBlockedMessage(User user)`
+
+**NotificationScheduler (@Scheduled)**:
+
+* raz dziennie:
+
+  * znajdź wypożyczenia z `dueDate = today.plusDays(3)` → wygeneruj `DUE_SOON`.
+  * znajdź wypożyczenia z `dueDate < today && returnDate IS NULL` → wygeneruj `OVERDUE` jeśli jeszcze nie ma takiej wiadomości.
+
+---
+
+### 3.5. Dashboard Admina (`admin.web` + serwisy)
+
+`DashboardController` łapie dane z serwisów:
+
+* `userService.countByStatus(INACTIVE)` → Nowi użytkownicy.
+* `circulationService.countActiveReservations()` → Oczekujące rezerwacje.
+* `circulationService.findOverdueLoans()` → lista książek przetrzymanych.
+
+Widok Thymeleaf: proste kafelki + tabela.
+
+---
+
+### 3.6. Metryki sukcesu – logi logowań (`metrics.domain` – opcjonalnie)
+
+Żeby spełnić wymagania dot. retencji/adopcji:
+
+```java
+@Entity
+@Table(name = "login_events")
+public class LoginEvent {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional=false)
+    private User user;
+
+    @Column(nullable=false)
+    private LocalDateTime loginTime;
+}
+```
+
+Przy udanym logowaniu w `AuthService`:
+
+* zapisujesz `LoginEvent`.
+
+Dla adoption rate używasz po prostu tabeli `Loan`:
+
+* unikalni `user_id` z aktywnością w danym kwartale.
+
+---
+
+## 4. Widoki i kontrolery (Thymeleaf) – z grubsza
+
+**Ścieżki (propozycja):**
+
+* Publiczne:
+
+  * `GET /` → wyszukiwarka + lista książek (jak US-009).
+  * `GET /books` → wyniki z paginacją, filtry (tytuł/autor/kategoria/status).
+  * `GET /about` → „O bibliotece”.
+  * `GET /register`, `POST /register`.
+  * `GET /login`.
+
+* Użytkownik:
+
+  * `GET /me/books` – lista moich rezerwacji + wypożyczeń (US-011, US-013).
+  * `POST /books/{itemId}/reserve` – rezerwacja (US-010).
+  * `POST /reservations/{id}/cancel` – anulowanie rezerwacji (US-011).
+  * `GET /messages` – lista wiadomości (US-017).
+  * `POST /messages/{id}/mark-read`.
+  * `POST /messages/{id}/delete`.
+
+* Admin:
+
+  * `GET /admin` – dashboard (US-015).
+  * `GET /admin/users` – lista użytkowników (sortowanie INACTIVE na górze).
+  * `POST /admin/users/{id}/activate`.
+  * `POST /admin/users/{id}/ban`.
+  * `POST /admin/users/{id}/reset-password`.
+  * `GET /admin/catalog/titles` / `items` – lista książek/egzemplarzy.
+  * `GET /admin/catalog/titles/new`, `POST /admin/catalog/titles`.
+  * `POST /admin/items/{id}/delete`.
+  * `GET /admin/reservations` – lista rezerwacji.
+  * `POST /admin/reservations/{id}/issue` – wydanie (US-012).
+  * `POST /admin/reservations/{id}/cancel` – anulowanie (US-014).
+  * `GET /admin/loans/overdue` – przetrzymane (US-015).
+
+---
+
+## 5. Gdzie umieścić reguły biznesowe z PRD
+
+**Zasada:**
+*Żadnej „poważnej” logiki w kontrolerach.* Wszystkie reguły PRD (limity, statusy, zmiany, blokady) w serwisach:
+
+* `UserService`:
+
+  * aktywacja konta, ban, reset hasła (admin),
+  * zmiana hasła (user).
+* `CatalogService`:
+
+  * CRUD tytułów, egzemplarzy, kategorii,
+  * blokada usunięcia kategorii niepustej,
+  * wyszukiwanie + paginacja.
+* `CirculationService`:
+
+  * rezerwacje, anulowanie, wydawanie, zwroty,
+  * walidacja limitu 3 szt.,
+  * walidacja statusów `BookItem`.
+* `MessagingService` + `NotificationScheduler`:
+
+  * generowanie powiadomień systemowych.
+
+Dzięki temu:
+
+* łatwo będzie Ci napisać testy jednostkowe/integrowe dla reguł (bez uruchamiania całego UI),
+* kontrolery staną się cienkie i czytelne.
+
+---
+
+Jeśli chcesz, w następnym kroku mogę:
+
+* rozpisać **konkretną klasę `CirculationService`** z sygnaturami metod (i pseudokodem),
+* albo zaproponować **schemat bazy (DDL)** pod te encje, żebyś miał punkt startowy do tworzenia migracji (Flyway/Liquibase).

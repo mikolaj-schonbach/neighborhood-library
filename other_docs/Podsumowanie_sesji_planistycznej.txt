@@ -1,0 +1,137 @@
+<conversation_summary> <decisions>
+
+    Role i proces rejestracji: Weryfikacja użytkownika odbywa się manualnie w bibliotece (okazanie tożsamości). Admin aktywuje konto przyciskiem w panelu. Brak e-maili aktywacyjnych.
+
+    Struktura zbiorów: Każdy fizyczny egzemplarz to osobny rekord w bazie (unikalne ID). Tytuł może występować wielokrotnie na liście.
+
+    Dane książek: Tytuł, Autorzy, Rodzaj, Kategoria (lista zamknięta z edycją przez Admina), ISBN, Rok wydania. Brak zdjęć okładek.
+
+    Komunikacja: Wyłącznie wewnętrzny system wiadomości (zakładka z ikoną/badge). Brak powiadomień e-mail.
+
+    Obsługa rezerwacji i wypożyczeń:
+
+        Zasada "kto pierwszy, ten lepszy".
+
+        Statusy: Dostępna, Zarezerwowana, Wypożyczona, Niedostępna.
+
+        Admin zmienia statusy manualnie ("Wydaj książkę", "Przyjmij zwrot", "Anuluj rezerwację").
+
+        Użytkownik może anulować własną rezerwację przed odbiorem.
+
+    Limity i kary:
+
+        Limit: Max 3 sztuki łącznie (wypożyczenia + rezerwacje).
+
+        Czas: Max 30 dni.
+
+        Brak kar finansowych. Admin manualnie blokuje (banuje) użytkownika.
+
+    Panel Admina:
+
+        Dashboard: Tablica zadań (nowi użytkownicy, rezerwacje, przetrzymania).
+
+        Zarządzanie użytkownikami: Sortowanie (nieaktywni na górze, wyróżnieni kolorem).
+
+        Zarządzanie hasłami: Reset hasła przez Admina (hasło tymczasowe podawane ustnie).
+
+    Interfejs Użytkownika:
+
+        Dashboard: Sekcja "Moje książki" + Wyszukiwarka.
+
+        Wyszukiwanie: Tekstowe (Tytuł/Autor) + Filtr Kategorii (AND logic).
+
+        Responsywność (RWD) wymagana dla widoków użytkownika.
+
+    Funkcjonalności wykluczone z MVP:
+
+        Prolongata terminu zwrotu (przedłużanie).
+
+        Historia wypożyczeń dla użytkownika.
+
+        Usuwanie konta przez użytkownika (tylko przez Admina).
+
+        Wyświetlanie pustych kategorii w filtrach.
+
+    Kwestie techniczne:
+
+        Hard delete (trwałe usuwanie) rekordów, jeśli nie są powiązane z aktywnymi procesami.
+
+        Paginacja wyników.
+
+        Auto-wylogowanie po 30 min.
+
+        Analityka oparta o logi w bazie danych (bez wizualnych raportów w aplikacji).
+
+</decisions>
+
+<matched_recommendations>
+
+    Wprowadzenie przycisków "Wydaj książkę" i "Przyjmij zwrot" dla odzwierciedlenia fizycznego przepływu (zastąpienie automatyzacji).
+
+    Umożliwienie Adminowi anulowania rezerwacji ("zwolnienie" książki).
+
+    Traktowanie każdego egzemplarza jako osobnego rekordu (uproszczenie logiki magazynowej).
+
+    Reset hasła realizowany przez Admina ze względu na brak modułu e-mail.
+
+    Blokada usunięcia kategorii, do której przypisane są książki (spójność danych).
+
+    Limit 3 sztuk sumujący wypożyczenia i rezerwacje.
+
+    Automatyczne generowanie numerów inwentarzowych (ID).
+
+    Blokada usuwania książek będących w obiegu.
+
+    Wprowadzenie paginacji list.
+
+    Wymóg potwierdzenia (modal) dla akcji destrukcyjnych (usuwanie, anulowanie). </matched_recommendations>
+
+<prd_planning_summary>
+
+a. Główne wymagania funkcjonalne produktu
+
+Moduł Użytkownika (User):
+
+    Rejestracja i logowanie (blokada dostępu do momentu aktywacji przez Admina).
+
+    Przeglądanie i wyszukiwanie księgozbioru (filtry: kategoria, wyszukiwanie tekstowe).
+
+    Rezerwacja egzemplarzy (z limitem ilościowym) i możliwość anulowania rezerwacji.
+
+    Dashboard: podgląd aktualnie wypożyczonych książek (terminy zwrotu) i statusu rezerwacji.
+
+    Odbiór wiadomości systemowych (powiadomienia o dostępności, upomnieniach, blokadzie).
+
+    Dostęp do informacji "O bibliotece" (adres, godziny, regulamin).
+
+    Zarządzanie profilem: zmiana hasła, edycja danych kontaktowych (bez edycji imienia/nazwiska/loginu).
+
+Moduł Administratora (Admin):
+
+    Zarządzanie księgozbiorem: CRUD (dodawanie, edycja, usuwanie) książek i kategorii.
+
+    Zarządzanie użytkownikami: Aktywacja kont, blokowanie/odblokowywanie, reset haseł, edycja danych.
+
+    Obsługa procesów bibliotecznych: Wydawanie rezerwacji, przyjmowanie zwrotów, anulowanie rezerwacji.
+
+    Dashboard operacyjny: Liczniki zadań (nowi userzy, oczekujące rezerwacje, przetrzymania).
+
+b. Kluczowe historie użytkownika i ścieżki korzystania
+
+    Ścieżka "Rejestracja i Aktywacja": Użytkownik wypełnia formularz -> Widzi komunikat "Udaj się do biblioteki" -> Bibliotekarz weryfikuje tożsamość i klika "Aktywuj" -> Użytkownik może się zalogować.
+
+    Ścieżka "Wypożyczenie": Użytkownik loguje się -> Wyszukuje książkę -> Klika "Rezerwuj" -> Udaje się do biblioteki -> Bibliotekarz znajduje książkę na liście "Rezerwacje" -> Klika "Wydaj" -> Książka zmienia status na "Wypożyczona", pojawia się data zwrotu.
+
+    Ścieżka "Niesubordynowany Użytkownik": Termin mija -> System wysyła wiadomość wewn. -> Użytkownik nie oddaje -> Admin widzi przetrzymanie na Dashboardzie -> Admin blokuje konto -> Użytkownik przy logowaniu widzi baner o blokadzie.
+
+c. Ważne kryteria sukcesu i sposoby ich mierzenia
+
+    Aktywność (Logowania): Cel: 80% użytkowników loguje się raz na kwartał. Mierzone poprzez analizę logów systemowych (tabela user_logs z timestampami).
+
+    Użycie (Wypożyczenia): Cel: 70% użytkowników wypożycza min. 1 książkę na kwartał. Mierzone poprzez zapytanie SQL do tabeli historii operacji/wypożyczeń.
+
+d. Wszelkie nierozwiązane kwestie lub obszary wymagające dalszego wyjaśnienia
+
+Proces tworzenia PRD na tym etapie posiada wystarczające dane wejściowe. Większość decyzji projektowych (nawet tych negatywnych, jak brak prolongaty czy e-maili) została podjęta świadomie. Jedynym obszarem do doprecyzowania na etapie dewelopmentu (a nie PRD) będzie dokładny format numeracji inwentarzowej (np. czy tylko cyfry, czy prefixy) oraz szczegóły interfejsu RWD. </prd_planning_summary>
+
+<unresolved_issues> Brak krytycznych nierozwiązanych kwestii blokujących stworzenie PRD. Wszystkie kluczowe mechanizmy MVP zostały zdefiniowane. </unresolved_issues> </conversation_summary>

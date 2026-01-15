@@ -1,0 +1,106 @@
+Oto lista 10 pytań i rekomendacji, które pomogą doprecyzować wymagania dla Neighborhood Library (MVP) i stworzyć kompletny PRD:
+
+    W jaki sposób fizycznie następuje zmiana statusu książki z „Zarezerwowana” na „Wypożyczona”? Rekomendacja: Ponieważ MVP nie zakłada automatyzacji, zalecam dodanie w panelu Admina funkcji „Wydaj książkę” (zmiana statusu rezerwacji na wypożyczenie) oraz „Przyjmij zwrot” (zmiana statusu na dostępną), aby odzwierciedlić fizyczny przepływ egzemplarzy.
+
+    Czy proces akceptacji nowego użytkownika przez Admina ma jakieś ograniczenia czasowe lub powiadomienia zewnętrzne? Rekomendacja: Aby uniknąć frustracji użytkowników czekających na dostęp (tzw. bottleneck), zalecam wdrożenie automatycznego powiadomienia e-mail do Admina o nowej rejestracji lub rozważenie modelu „otwartego z weryfikacją e-mail”, jeśli bezpieczeństwo na to pozwala.
+
+    Jakie konkretnie dane o książce/czasopiśmie są niezbędne w formularzu dodawania, skoro nie mamy zdjęć okładek? Rekomendacja: Należy zdefiniować sztywny zestaw pól: Tytuł, Autor, Kategoria (Książka/Czasopismo), ISBN (opcjonalnie), Rok wydania. Brak okładek wymusza bardzo czytelną prezentację typograficzną na listach wyszukiwania.
+
+    Jak zdefiniowany jest mechanizm „Powiadomień systemowych”? Czy są to tylko komunikaty wewnątrz aplikacji, czy również e-maile? Rekomendacja: Dla krytycznych zdarzeń (przekroczenie terminu, dostępność rezerwacji) sugeruję wykorzystanie e-maili. Użytkownik, który nie wchodzi do aplikacji, nie zobaczy komunikatu wewnętrznego, co negatywnie wpłynie na terminowość zwrotów.
+
+    Co dzieje się w sytuacji, gdy użytkownik nie zwróci książki, a MVP wyklucza system płatności kar? Rekomendacja: Należy dać Adminowi możliwość manualnego blokowania konta użytkownika („ban”) lub oznaczania go jako „nierzetelny”, co zablokuje możliwość składania kolejnych rezerwacji do momentu wyjaśnienia sprawy.
+
+    Czy przewidujemy edycję danych książek i użytkowników, czy tylko ich dodawanie i usuwanie? Rekomendacja: W opisie wspomniano tylko o dodawaniu/usuwaniu. Zdecydowanie zalecam dodanie funkcji „Edytuj” dla Admina, aby umożliwić poprawę literówek w tytułach lub zmianę nazwiska użytkownika bez konieczności usuwania rekordu i historii wypożyczeń.
+
+    Jak rozwiązujemy problem dostępności popularnych tytułów (kolejkowanie)? Rekomendacja: W MVP warto przyjąć prostą zasadę: kto pierwszy, ten lepszy. Jeśli książka jest wypożyczona, status to „Niedostępna” (bez możliwości rezerwacji na zapas). Opcję „Powiadom, gdy dostępna” można dodać, ale pełne kolejkowanie może być zbyt skomplikowane na ten etap.
+
+    W jaki sposób użytkownik dowie się, gdzie i w jakich godzinach może odebrać książkę? Rekomendacja: Ponieważ jest to biblioteka sąsiedzka, aplikacja musi zawierać statyczną stronę lub stopkę z informacją „O bibliotece” (adres, godziny otwarcia, kontakt do Admina), widoczną dla zalogowanych użytkowników.
+
+    Jakie są parametry domyślne dla wypożyczeń (czas trwania, limit sztuk)? Rekomendacja: Należy zdefiniować w systemie globalne zmienne, np. maksymalny czas wypożyczenia (np. 14 dni) oraz limit jednoczesnych wypożyczeń na użytkownika (np. 3 sztuki), aby zapobiec opróżnieniu biblioteki przez jedną osobę.
+
+    W jaki sposób będziemy zbierać dane do weryfikacji Kryteriów Sukcesu (80% logowań, 70% wypożyczeń)? Rekomendacja: Należy zaprojektować prosty moduł analityczny lub logi systemowe, które będą rejestrować datę „ostatniego logowania” oraz historię transakcji per użytkownik, aby po kwartale móc wygenerować raport zgodny z założonymi KPI.
+
+
+ Poniżej odpowiedzi na zadane pytania:
+
+1. W panelu Admina powinny być zakładki : "Rezerwacje" zawierająca listę wszystkich książek które zostały zarezerwowane oraz "Wypożyczenia" zawierająca listę wszystkich książek które są wypożyczone. Po zgłoszeniu się użytkownika do biblioteki w celu wypożyczenia lub oddania książki bibliotekarz z uprawnieniami admina wchodzi na odpowiednią zakładkę i przy danej książce klika odpowiednio przycisk "Wydaj książkę" lub "Przyjmij zwrot"
+
+2. Na tym etapie nie chciałbym dodawać funkcjonalności wysyłania e-maili. Proces akceptacji nowego użytkownika nie ma ograniczeń czasowych. Zakładam, że po wysłaniu formularza rejestracji użytkownikowi zostanie wyświetlona informacja aby udał się do biblioteki w celu aktywacji konta. Bibliotekarz po sprawdzeniu tożsamości użytkownika wejdzie na zakładkę "Użytkownicy" i w wierszu przy imieniu i nazwisku danej osoby naciśnie przycisk "Aktywuj konto". Od tego momentu konto użytkownika jest aktywne, może się na nie logować i rezerwować książki. Przed aktywacją przy próbie zalogowania na konto użytkownik powinien otrzymać komunikat aby aktywować konto w bibliotece.
+
+3. Proponuję następujący zestaw pól: Tytuł, Autorzy (może być kilku, ewentualnie informacja "Praca zbiorowa"), Rodzaj (Książka lub Czasopismo), Kategoria (np. Historyczne, Science-fiction, Literatura piękna, Informatyka itd), ISBN, Rok wydania.
+
+4. W tej wersji nie chciałbym implementować mechanizmu powiadomień mailowych. Proponuję w aplikacji zakładkę "Wiadomości" która w przypadku otrzymania nowej wiadomości która nie została jeszcze odczytana będzie miała ikonkę np wykrzyknika. Zdaję sobie sprawę, że w przypadku użytkowników którzy nie będą logowali się zbyt często może dochodzić do przetrzymywania książek ale jest to świadoma decyzja z mojej strony.
+
+5. Zgadzam się z rekomendacją aby w przypadku nierzetelnych użytkowników dać adminowi możliwość zablokowania użytkownika tzn. taki zablokowany użytkownik po zalogowaniu będzie widział informację że został zablokowany z powodu przetrzymania książki i powinien zgłosić się do biblioteki w celu wyjaśnienia sytuacji. Oczywiści admin ma mieć możliwość odblokowania zablokowanego użytkownika.
+
+6. Zgadzam się z rekomendacją - oprócz opcji dodawania i usuwania książek i użytkowników admin ma mieć możliwość edycji danych zarówno książek jak i użytkowników.
+
+7. Zgadzam się z rekomendacją - ma obowiązywać zasada kto pierwszy, ten lepszy. Wypożyczona książka będzie mieć status "Niedostępna" bez możliwości rezerwacji na zapas.
+
+8. Zgadzam się z rekomendacją - może na dole strony przycisk "O bibliotece" po kliknięciu którego wyskoczy okienko dialogowe (modal) prezentujące podstawowe dane o bibliotece - adres, godziny otwarcia, kontakt do Admina. Proponuję aby taki przycisk był też dostępny dla niezalogowanych użytkowników na ekranie z przyciskami "Zaloguj" i "Zarejestruj" aby użytkownicy którzy nie są jeszcze aktywowani też mieli dostęp do tych informacji.
+
+9. Proponuję maksymalny czas wypożyczenia 30 dni i limit jednoczesnych wypożyczeń 3 sztuki.
+
+10. Zgadzam się z rekomendacją aby zbierać logi systemowe np odnotowywać zalogowania i wypożyczenia użytkownika w tabeli w bazie danych. 
+
+
+Oto kolejna lista 10 pytań i rekomendacji, wynikająca z Twoich odpowiedzi, która pozwoli doprecyzować szczegóły techniczne i funkcjonalne niezbędne do zamknięcia PRD:
+
+    Co dzieje się z rezerwacją, jeśli użytkownik nie zgłosi się po odbiór książki (np. przez tydzień)? Rekomendacja: Aby uniknąć „blokowania” książek przez nieaktywne rezerwacje, zalecam dodanie w panelu Admina (zakładka „Rezerwacje”) przycisku „Anuluj rezerwację”. System nie musi robić tego automatycznie w MVP, ale Admin musi mieć narzędzie do ręcznego zwolnienia książki z powrotem do puli dostępnych.
+
+    Jak system ma traktować posiadanie wielu egzemplarzy tej samej książki (np. 3 egzemplarze „Harry’ego Pottera”)? Rekomendacja: Ze względu na uproszczenie MVP, sugeruję traktować każdy fizyczny egzemplarz jako osobny rekord w bazie danych (np. z unikalnym ID). Użytkownik będzie widział na liście 3 razy ten sam tytuł. Unikniemy w ten sposób skomplikowanej logiki „stanów magazynowych” dla jednego tytułu.
+
+    W jaki sposób realizowana jest procedura resetowania hasła, skoro nie wysyłamy e-maili? Rekomendacja: To kluczowa kwestia bezpieczeństwa/obsługi. W tym modelu jedyną opcją jest reset hasła przez Admina. Admin w edycji użytkownika powinien mieć przycisk „Resetuj hasło”, który ustawia hasło tymczasowe, widoczne dla Admina, które przekazuje ustnie użytkownikowi w bibliotece.
+
+    Jakie dokładnie pola ma zawierać formularz rejestracji użytkownika? Rekomendacja: Sugeruję minimalizm: Imię, Nazwisko, Login (unikalny), Hasło. Numer telefonu lub adres zamieszkania mogą być opcjonalne, chyba że są wymagane do fizycznej weryfikacji tożsamości przez bibliotekarza.
+
+    Czy lista „Kategorii” książek (np. Science-fiction, Historia) jest listą zamkniętą, czy Admin może wpisywać cokolwiek? Rekomendacja: Aby filtrowanie działało sprawnie, zalecam, aby Admin wybierał kategorię z predefiniowanej listy rozwijanej (którą można zarządzać w oddzielnym słowniku lub na sztywno w kodzie dla MVP), zamiast wpisywać ją ręcznie (co rodzi ryzyko literówek np. „Sci-fi” vs „Science Fiction”).
+
+    Jaki widok powinien zobaczyć użytkownik (User) bezpośrednio po zalogowaniu (Dashboard)? Rekomendacja: Ekran startowy powinien składać się z dwóch sekcji: na górze „Moje książki” (aktualne wypożyczenia z datami zwrotu i aktywne rezerwacje), a poniżej lista/wyszukiwarka wszystkich książek. To ułatwi kontrolę terminów.
+
+    W jaki sposób generowane są komunikaty w zakładce „Wiadomości”? Rekomendacja: System powinien generować je automatycznie (trigger w bazie danych).
+
+        Gdy Admin kliknie „Wypożycz”: komunikat „Wypożyczyłeś [Tytuł]. Termin zwrotu: [Data]”.
+
+        Gdy minie termin (cron job): komunikat „Termin zwrotu [Tytuł] minął. Zwróć książkę”.
+
+        Gdy Admin zablokuje konto: komunikat o blokadzie. Ręczne pisanie wiadomości przez Admina w MVP byłoby zbyt czasochłonne.
+
+    W jaki sposób użytkownik będzie wyszukiwał książki? Rekomendacja: Prosta wyszukiwarka tekstowa przeszukująca pola: Tytuł oraz Autor. Dodatkowo filtr (dropdown) dla Kategorii. To wystarczy dla MVP.
+
+    Czy przewidujemy historię wypożyczeń widoczną dla Użytkownika (co już przeczytałem)? Rekomendacja: W MVP skupmy się na „Tu i teraz”. Profil użytkownika powinien pokazywać tylko aktywne wypożyczenia i rezerwacje. Pełna historia wypożyczeń to funkcja na wersję 2.0, co uprości bazę danych i interfejs.
+
+    Jak technicznie identyfikujemy książkę przy wydawaniu/zwrocie (skoro ISBN jest taki sam dla wszystkich egzemplarzy danego tytułu)? Rekomendacja: System musi nadawać każdemu dodanemu egzemplarzowi unikalny, krótki numer inwentarzowy (np. ID: 1001, 1002). Bibliotekarz powinien fizycznie wpisać ten numer na wklejce w książce. Wyszukiwanie w panelu Admina przy zwrocie powinno odbywać się po tym numerze lub tytule + nazwisku wypożyczającego.
+
+
+----------------------------------
+
+Jakie są główne grupy użytkowników (np. mieszkańcy z kartą biblioteczną, pracownicy biblioteki, wolontariusze) oraz w jakim kontekście mają korzystać z aplikacji (w domu, na miejscu w bibliotece, na telefonie)?
+Rekomendacja: Doprecyzuj 1–2 kluczowe persony i scenariusze użycia (np. „mieszkaniec szukający książki wieczorem w domu”), aby w PRD jasno ustawić priorytety UX i dostosować rozwiązanie do realnych warunków korzystania.
+
+Co dokładnie oznacza „rezerwowanie” vs „wypożyczanie” w tym systemie – czy użytkownik w aplikacji tylko rezerwuje egzemplarz, a fizyczne wypożyczenie następuje na miejscu, czy też system ma odzwierciedlać pełen cykl wypożyczenia?
+Rekomendacja: Zdefiniuj model stanów egzemplarza (np. dostępna → zarezerwowana → wypożyczona → po terminie → zwrócona) i opisz krok po kroku, co robi użytkownik i admin w każdej z tych faz – to będzie kluczowa sekcja PRD.
+
+Jakie dane muszą być obowiązkowo zebrane w formularzu rejestracji (np. imię, nazwisko, e-mail, adres, numer karty bibliotecznej) i w jakim czasie admin ma aktywować nowe konto?
+Rekomendacja: Określ minimalny zestaw pól rejestracyjnych oraz SLA aktywacji (np. „do 24h”), aby PRD mógł uwzględnić zarówno prostotę rejestracji, jak i proces po stronie admina.
+
+Jak bogaty ma być opis pozycji w katalogu (np. tytuł, autor, rok wydania, typ: książka/czasopismo, kategoria, słowa kluczowe, liczba egzemplarzy)?
+Rekomendacja: Ustal minimalny schemat danych dla książek i czasopism oraz to, które pola są obowiązkowe, aby zapewnić sensowne wyszukiwanie przy jednoczesnym ograniczeniu pracy admina podczas dodawania pozycji.
+
+Jakiego poziomu zaawansowania oczekujesz od modułu wyszukiwania – proste wyszukiwanie tekstowe, czy także filtrowanie (autor, kategoria, dostępność, typ: książka/czasopismo) i sortowanie wyników?
+Rekomendacja: Dla MVP zalecam prosty search + 2–3 podstawowe filtry (np. typ, dostępność, kategoria) oraz sortowanie po trafności/alfabetycznie; bardziej złożone opcje można przewidzieć jako rozwój po weryfikacji użycia.
+
+Jakie informacje użytkownik powinien widzieć na stronie profilu poza listą aktualnie wypożyczonych egzemplarzy (np. historia wypożyczeń, maksymalna liczba równoczesnych wypożyczeń, regulamin, status konta)?
+Rekomendacja: W PRD opisz jasno minimalny zakres: lista aktualnych wypożyczeń z datami zwrotu i statusem (np. „po terminie”), a historię i dodatkowe informacje potraktuj jako „nice-to-have” do późniejszych iteracji.
+
+Jakie kanały komunikacji mają być używane do powiadomień (tylko e-mail, tylko komunikaty w aplikacji, oba, SMS?) oraz jak często mają być wysyłane przypomnienia o przekroczonym terminie i dostępności rezerwacji?
+Rekomendacja: Dla MVP wybierz 1 główny kanał transakcyjny (np. e-mail + sekcja „komunikaty” w aplikacji) i ustal proste reguły (np. 1 powiadomienie w dniu przekroczenia terminu, 1 powiadomienie o dostępności rezerwacji), które można potem rozbudować.
+
+Czy oprócz podanych KPI (logowania i wypożyczeń na kwartał) są inne istotne wskaźniki, np. liczba aktywnych rezerwacji, średni czas od rezerwacji do wypożyczenia, liczba spóźnień?
+Rekomendacja: Zdefiniuj 3–5 kluczowych metryk produktowych i technicznych oraz miejsce ich raportowania (np. prosty panel admina), aby już w MVP zaplanować zbieranie danych koniecznych do oceny sukcesu.
+
+Jakie widzisz główne ryzyka przy braku systemu opłat za spóźnienia (np. masowe przetrzymywanie książek, zniechęcenie innych użytkowników) i czy zakładasz jakiekolwiek „miękkie” mechanizmy kontroli (np. blokada nowych wypożyczeń po X dniach opóźnienia)?
+Rekomendacja: Określ proste zasady postępowania z użytkownikami, którzy często przekraczają termin (np. blokada nowych rezerwacji), i opisz to w PRD jako reguły biznesowe, aby zmniejszyć ryzyko nadużyć bez wdrażania płatności.
+
+Jaki jest docelowy horyzont czasowy dla MVP (data uruchomienia) oraz na jakie platformy ma być dostępna aplikacja na starcie (responsywna przeglądarka, PWA, natywna aplikacja mobilna)?
+Rekomendacja: Dla MVP jasno zadeklaruj termin startu i przyjmij strategię „web-first” (responsywna aplikacja przeglądarkowa), aby uprościć zakres techniczny w PRD i umożliwić szybsze dostarczenie w ramach dostępnych zasobów.

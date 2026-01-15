@@ -1,0 +1,451 @@
+<tech-stack>
+- Java 17 i SpringBoot 3.5.7 dla warstwy backendowej
+- Thymeleaf dla warstwy frontend
+
+CI/CD i Hosting:
+- Github Actions do tworzenia pipeline’ów CI/CD
+- render.com jak platforma hostingowa wraz z bazą danych PostgreSQL
+</tech-stack>
+
+
+<prd>
+Dokument wymagań produktu (PRD) - Neighborhood library
+
+1. Przegląd produktu
+
+Aplikacja Neighborhood Library to system typu MVP (Minimum Viable Product) mający na celu cyfryzację procesów w bibliotece sąsiedzkiej. System ma za zadanie zastąpić manualne przeszukiwanie fizycznych półek cyfrowym katalogiem dostępnym online, umożliwiając użytkownikom sprawdzanie dostępności i rezerwację tytułów. Aplikacja usprawnia również pracę bibliotekarza (Administratora) poprzez centralizację bazy danych czytelników, księgozbioru oraz zarządzanie statusem wypożyczeń.
+Głównym celem tego wydania jest dostarczenie kluczowych funkcjonalności niezbędnych do obsługi obiegu książek bez zbędnych komplikacji (brak płatności, brak automatyzacji mailowej), skupiając się na interakcji fizycznej wspieranej przez system informatyczny.
+
+2. Problem użytkownika
+
+Obecnie korzystanie z biblioteki sąsiedzkiej wiąże się z koniecznością fizycznej obecności w celu sprawdzenia dostępności tytułów. Jest to proces czasochłonny i często kończy się frustracją, gdy poszukiwana pozycja jest niedostępna.
+Kluczowe problemy:
+⦁	Brak możliwości zdalnego sprawdzenia, czy dana książka jest dostępna.
+⦁	Trudność w kontroli terminów zwrotu przez czytelników.
+⦁	Czasochłonne zarządzanie papierową kartoteką przez bibliotekarza.
+⦁	Brak szybkiej informacji o nowościach w bibliotece.
+
+3. Wymagania funkcjonalne
+
+3.1 Uwierzytelnianie i Zarządzanie Użytkownikami
+⦁	Rejestracja użytkowników z danymi: Imię, Nazwisko, Login, Hasło, Telefon, Adres.
+⦁	Dwuetapowy proces dostępu: Rejestracja online -> Fizyczna weryfikacja tożsamości w bibliotece -> Aktywacja konta przez Administratora w systemie.
+⦁	Logowanie tylko dla aktywnych użytkowników.
+⦁	Możliwość blokowania kont użytkowników (ban) przez Administratora (np. za przetrzymywanie książek).
+⦁	Resetowanie hasła realizowane manualnie przez Administratora (nadanie hasła tymczasowego).
+⦁	Użytkownik może edytować tylko swoje hasło, ale nie dane tożsamościowe i kontaktowe (imię, nazwisko, login, telefon, adres).
+
+3.2 Zarządzanie Księgozbiorem (Administrator)
+⦁	Dodawanie książek/czasopism z polami: Tytuł, Autorzy, Rodzaj, Kategoria, ISBN, Rok wydania.
+⦁	Każdy fizyczny egzemplarz jest osobnym rekordem w bazie z unikalnym, automatycznie generowanym numerem inwentarzowym (ID).
+⦁	Zarządzanie słownikiem Kategorii (dodawanie, edycja, usuwanie - z blokadą usunięcia kategorii niepustej).
+⦁	Usuwanie książek (tylko jeśli nie są wypożyczone/zarezerwowane) oraz ich edycja.
+
+3.3 Przeglądanie i Wyszukiwanie (Użytkownik)
+⦁	Wyszukiwarka tekstowa (Tytuł, Autor) działająca łącznie z filtrem Kategorii.
+⦁	Wyświetlanie listy wyników z paginacją (stronicowaniem).
+⦁	Prezentacja statusu dostępności dla każdego egzemplarza: Dostępna, Zarezerwowana, Wypożyczona, Niedostępna.
+
+3.4 Proces Rezerwacji i Wypożyczania
+⦁	Rezerwacja online przez użytkownika (model kto pierwszy, ten lepszy).
+⦁	Limit ilościowy: suma wypożyczeń i rezerwacji nie może przekroczyć 3 sztuk na użytkownika.
+⦁	Maksymalny czas wypożyczenia: 30 dni.
+⦁	Możliwość samodzielnego anulowania rezerwacji przez użytkownika przed odbiorem.
+⦁	Administrator zmienia statusy manualnie: Wydanie książki (zmiana z Zarezerwowana na Wypożyczona), Przyjęcie zwrotu (zmiana z Wypożyczona na Dostępna), Anulowanie rezerwacji.
+
+3.5 Komunikacja i Powiadomienia
+⦁	Wewnętrzny system wiadomości (ikona/badge w aplikacji).
+⦁	Automatyczne generowanie komunikatów systemowych przy zdarzeniach: zbliżający się termin zwrotu, przekroczenie terminu, zablokowanie konta.
+⦁	Status wiadomości: przeczytana/nieprzeczytana.
+
+3.6 Interfejs i UX
+⦁	Responsywność (RWD) dla widoków użytkownika (dostęp mobilny).
+⦁	Panel Administratora z dashboardem operacyjnym (liczniki zadań).
+⦁	Statyczna informacja "O bibliotece" (adres, godziny, regulamin) dostępna w modalu.
+
+4. Granice produktu
+
+Poniższe funkcjonalności są wyraźnie wyłączone z zakresu MVP:
+⦁	Integracja z systemami płatności (kary są obsługiwane poza systemem lub przez blokadę konta).
+⦁	Przesyłanie i wyświetlanie zdjęć okładek książek.
+⦁	System recenzji i oceniania książek.
+⦁	Wysyłanie wiadomości między użytkownikami (czat) lub od użytkownika do admina.
+⦁	Powiadomienia E-mail/SMS (tylko komunikaty wewnątrz aplikacji).
+⦁	Możliwość przedłużania terminu zwrotu (prolongata) przez użytkownika lub admina w systemie.
+⦁	Historia wypożyczeń archiwalnych dla użytkownika (widoczne tylko bieżące).
+⦁	Soft delete (książki są usuwane trwale).
+
+5. Historyjki użytkowników
+
+Uwierzytelnianie i Profil
+
+ID: US-001 Rejestracja użytkownika
+Tytuł: Rejestracja nowego konta czytelnika
+Opis: Jako nowy użytkownik chcę wypełnić formularz rejestracyjny, aby zgłosić chęć dołączenia do biblioteki.
+Kryteria akceptacji:
+⦁	Formularz zawiera pola: Imię, Nazwisko, Login (unikalny), Hasło, Powtórz hasło, Telefon, Adres.
+⦁	Hasło musi mieć minimum 8 znaków.
+⦁	Po wysłaniu formularza system tworzy konto ze statusem Nieaktywny.
+⦁	Użytkownik widzi komunikat o konieczności udania się do placówki w celu aktywacji konta.
+
+ID: US-002 Aktywacja konta przez Administratora
+Tytuł: Aktywacja zweryfikowanego użytkownika
+Opis: Jako Administrator chcę aktywować konto użytkownika po weryfikacji jego tożsamości, aby umożliwić mu logowanie.
+Kryteria akceptacji:
+⦁	Administrator widzi listę użytkowników posortowaną tak, że nieaktywni są na górze i wyróżnieni kolorem.
+⦁	Administrator ma przycisk Aktywuj przy użytkowniku.
+⦁	Po kliknięciu status zmienia się na Aktywny.
+
+ID: US-003 Logowanie do systemu
+Tytuł: Bezpieczne logowanie użytkownika
+Opis: Jako użytkownik chcę zalogować się na swoje konto, aby korzystać z funkcji biblioteki.
+Kryteria akceptacji:
+⦁	Logowanie wymaga podania Loginu i Hasła.
+⦁	System blokuje logowanie dla kont o statusie Nieaktywny (wyświetla komunikat o konieczności aktywacji).
+⦁	System wpuszcza użytkownika o statusie Aktywny.
+⦁	Użytkownik zablokowany (zbanowany) może się zalogować, ale widzi wyraźny komunikat o blokadzie i ma ograniczony dostęp (tylko podgląd zwrotów).
+
+ID: US-004 Reset hasła
+Tytuł: Administracyjny reset hasła
+Opis: Jako Administrator chcę zresetować hasło użytkownika, który je zapomniał, aby przywrócić mu dostęp.
+Kryteria akceptacji:
+⦁	Administrator w edycji użytkownika ma przycisk Resetuj hasło.
+⦁	System generuje nowe hasło lub pozwala wpisać je ręcznie administratorowi.
+⦁	Administrator przekazuje hasło ustnie użytkownikowi.
+
+ID: US-005 Edycja profilu i zmiana hasła
+Tytuł: Zarządzanie własnymi danymi
+Opis: Jako zalogowany użytkownik chcę zmienić swoje hasło.
+Kryteria akceptacji:
+⦁	Pola Imię, Nazwisko, Login, Telefon i Adres są zablokowane do edycji.
+⦁	Użytkownik może zmienić hasło podając stare i nowe (min. 8 znaków).
+
+Zarządzanie Księgozbiorem (Admin)
+
+ID: US-006 Dodawanie nowej książki
+Tytuł: Rejestracja egzemplarza w systemie
+Opis: Jako Administrator chcę dodać nową książkę do bazy, aby była widoczna dla czytelników.
+Kryteria akceptacji:
+⦁	Formularz zawiera: Tytuł, Autorzy, Rodzaj (Książka/Czasopismo), Kategoria (lista rozwijana), ISBN, Rok wydania.
+⦁	System generuje unikalne ID (numer inwentarzowy) dla dodanego rekordu.
+⦁	Domyślny status nowej książki to Dostępna.
+
+ID: US-007 Zarządzanie kategoriami
+Tytuł: Edycja słownika kategorii
+Opis: Jako Administrator chcę dodawać i usuwać kategorie książek, aby utrzymać porządek w zbiorach.
+Kryteria akceptacji:
+⦁	Administrator może dodać nową nazwę kategorii.
+⦁	Administrator może edytować nazwę istniejącej kategorii.
+⦁	Próba usunięcia kategorii, do której przypisane są książki, kończy się błędem i komunikatem blokującym.
+
+ID: US-008 Usuwanie książki
+Tytuł: Usuwanie zniszczonych lub zagubionych egzemplarzy
+Opis: Jako Administrator chcę trwale usunąć książkę z systemu.
+Kryteria akceptacji:
+⦁	Akcja usuwania wymaga potwierdzenia w oknie modalnym.
+⦁	System blokuje usunięcie książki, która ma status Wypożyczona lub Zarezerwowana.
+⦁	Jeśli książka została zagubiona przez użytkownika to Administrator najpierw zmienia jej status na Dostępna (czyli w systemie dokonuje przyjęcia zwrotu) a później ją usuwa.
+⦁	Jeśli książka ma status Zarezerwowana a z jakiegoś powodu zaginęła to Administrator najpierw zmienia status na Dostępna (anuluje rezerwację) a później ją usuwa.
+⦁	Usunięcie jest trwałe (hard delete).
+
+Wyszukiwanie i Rezerwacja (User)
+
+ID: US-009 Przeglądanie i wyszukiwanie
+Tytuł: Wyszukiwanie materiałów bibliotecznych
+Opis: Jako użytkownik chcę znaleźć interesującą mnie książkę za pomocą wyszukiwarki.
+Kryteria akceptacji:
+⦁	Wyszukiwarka pozwala wpisać frazę (szuka w Tytule i Autorze).
+⦁	Użytkownik może wybrać Kategorię z listy (tylko kategorie niepuste).
+⦁	Wyniki można filtrować po obu kryteriach jednocześnie lub po jednym kryterium (jeśli drugie jest niewypełnione)
+⦁	Lista wyników jest stronicowana (paginacja).
+
+ID: US-010 Rezerwacja książki
+Tytuł: Rezerwacja dostępnego egzemplarza
+Opis: Jako użytkownik chcę zarezerwować dostępną książkę, aby odebrać ją w bibliotece.
+Kryteria akceptacji:
+⦁	Przycisk Rezerwuj jest aktywny tylko dla statusu Dostępna.
+⦁	System sprawdza limit użytkownika (Max 3 sztuki: wypożyczone + zarezerwowane).
+⦁	Jeśli limit jest przekroczony, system blokuje rezerwację i wyświetla komunikat.
+⦁	Po sukcesie status książki zmienia się na Zarezerwowana.
+
+ID: US-011 Anulowanie rezerwacji
+Tytuł: Rezygnacja z rezerwacji
+Opis: Jako użytkownik chcę anulować moją rezerwację, jeśli zmieniłem zdanie.
+Kryteria akceptacji:
+⦁	Użytkownik widzi listę swoich rezerwacji w panelu Moje książki.
+⦁	Przy aktywnej rezerwacji dostępny jest przycisk Anuluj.
+⦁	Po kliknięciu i potwierdzeniu status książki wraca na Dostępna, a limit użytkownika się zwalnia.
+
+Obieg Książek (Admin)
+
+ID: US-012 Wydanie książki (Wypożyczenie)
+Tytuł: Realizacja wypożyczenia w bibliotece
+Opis: Jako Administrator chcę odnotować w systemie wydanie zarezerwowanej książki użytkownikowi.
+Kryteria akceptacji:
+⦁	Administrator wchodzi w zakładkę Rezerwacje.
+⦁	Klika przycisk Wydaj przy odpowiednim tytule i użytkowniku.
+⦁	Status książki zmienia się na Wypożyczona.
+⦁	System ustawia termin zwrotu na data bieżąca + 30 dni.
+⦁	Użytkownik otrzymuje wiadomość systemową o wypożyczeniu.
+
+ID: US-013 Zwrot książki
+Tytuł: Przyjęcie zwrotu od czytelnika
+Opis: Jako Administrator chcę odnotować zwrot książki, aby znów była dostępna dla innych.
+Kryteria akceptacji:
+⦁	Administrator wyszukuje wypożyczenie (np. po numerze inwentarzowym lub nazwisku).
+⦁	Klika przycisk "Przyjmij zwrot".
+⦁	Status książki zmienia się na "Dostępna".
+⦁	Wypożyczenie znika z listy aktywnych wypożyczeń użytkownika.
+
+ID: US-014 Anulowanie rezerwacji przez Admina
+Tytuł: Zwolnienie nieodebranej rezerwacji
+Opis: Jako Administrator chcę anulować rezerwację, jeśli użytkownik nie zgłosił się po odbiór.
+Kryteria akceptacji:
+⦁	Administrator w zakładce Rezerwacje klika Anuluj rezerwację.
+⦁	Wymagane potwierdzenie w modalu.
+⦁	Status książki zmienia się na Dostępna.
+
+Zarządzanie Użytkownikami (Admin) i Powiadomienia
+
+ID: US-015 Dashboard Administratora
+Tytuł: Podgląd zadań bieżących
+Opis: Jako Administrator po zalogowaniu chcę widzieć podsumowanie zadań wymagających uwagi.
+Kryteria akceptacji:
+⦁	Widok zawiera licznik: Nowi użytkownicy (do aktywacji).
+⦁	Widok zawiera licznik: Oczekujące rezerwacje.
+⦁	Widok zawiera listę: Książki przetrzymane (po terminie).
+
+ID: US-016 Blokowanie użytkownika (Ban)
+Tytuł: Blokada konta za naruszenia
+Opis: Jako Administrator chcę zablokować użytkownika, który nie oddał książek w terminie.
+Kryteria akceptacji:
+⦁	Administrator ma przycisk Zablokuj na profilu użytkownika.
+⦁	Zablokowany użytkownik traci możliwość rezerwacji książek.
+⦁	Zablokowany użytkownik otrzymuje powiadomienie systemowe o blokadzie.
+
+ID: US-017 System powiadomień i wiadomości
+Tytuł: Odbieranie komunikatów systemowych
+Opis: Jako użytkownik chcę być informowany o ważnych zdarzeniach dotyczących mojego konta.
+Kryteria akceptacji:
+⦁	Aplikacja posiada zakładkę Wiadomości.
+⦁	Ikona wiadomości posiada licznik nieprzeczytanych powiadomień.
+⦁	System automatycznie wysyła wiadomość, gdy minie termin zwrotu.
+⦁	Użytkownik może usunąć przeczytaną wiadomość.
+
+ID: US-018 Informacje o bibliotece
+Tytuł: Dostęp do danych kontaktowych
+Opis: Jako użytkownik (również niezalogowany) chcę sprawdzić godziny otwarcia biblioteki.
+Kryteria akceptacji:
+⦁	Dostępny przycisk "O bibliotece" (w stopce lub menu).
+⦁	Kliknięcie otwiera okno (modal) z adresem, godzinami otwarcia i skróconym regulaminem (limity 3 szt / 30 dni).
+
+6. Metryki sukcesu
+
+Aby ocenić skuteczność wdrożenia wersji MVP, monitorowane będą następujące wskaźniki (mierzone w cyklach kwartalnych na podstawie logów systemowych i bazy danych):
+
+Wskaźnik Retencji (Retention Rate):
+⦁	Cel: 80% zarejestrowanych i aktywnych użytkowników loguje się do aplikacji przynajmniej raz na kwartał.
+⦁	Sposób pomiaru: Analiza tabeli logów logowania, zliczanie unikalnych ID użytkowników z logowaniem w zakresie dat kwartału w stosunku do ogólnej liczby aktywnych kont.
+
+Wskaźnik Adopcji (Adoption Rate):
+⦁	Cel: 70% aktywnych użytkowników dokonuje wypożyczenia (status Wypożyczona) przynajmniej 1 książki na kwartał.
+⦁	Sposób pomiaru: Zapytanie SQL do tabeli historii operacji, zliczające unikalnych użytkowników, którzy mieli przypisaną akcję Wydania książki w danym kwartale.
+</prd>
+
+Dokonaj krytycznej lecz rzeczowej analizy czy <tech-stack> odpowiednio adresuje potrzeby <prd> Rozważ następujące pytania:
+1. Czy technologia pozwoli nam szybko dostarczyć MVP?
+2. Czy rozwiązanie będzie skalowalne w miarę wzrostu projektu?
+3. Czy koszt utrzymania i rozwoju będzie akceptowalny?
+4. Czy potrzebujemy aż tak złożonego rozwiązania?
+5. Czy nie istnieje prostsze podejście, które spełni nasze wymagania?
+6. Czy technologie pozwoli nam zadbać o odpowiednie bezpieczeństwo?
+
+
+
+------------------------------------
+
+Odpowiadając wprost: ten stack **jest w stanie dowieźć takie MVP**, ale może być trochę „armatą na muchę” – chyba że zespół *już* dobrze zna Springa. Poniżej przechodzę po Twoich 6 pytaniach.
+
+---
+
+## 1. Czy technologia pozwoli szybko dostarczyć MVP?
+
+**Plusy:**
+
+* PRD to klasyczne **CRUD + workflow** (użytkownicy, książki, kategorie, rezerwacje, wypożyczenia, wiadomości, dashboard admina).
+  Spring Boot + Spring Data + Thymeleaf nadają się do tego wręcz podręcznikowo.
+* Formularze z walidacją (rejestracja, logowanie, edycje) da się szybko ogarnąć:
+
+  * Bean Validation (JSR-380) dla pól typu hasło ≥ 8 znaków, wymagane pola itd.
+  * Thymeleaf dobrze współpracuje z Spring MVC i komunikatami błędów.
+* Logika domenowa (statusy książek, limit 3 szt., 30 dni, ban użytkownika) elegancko się mieści w:
+
+  * encjach JPA,
+  * serwisach z tranzakcjami (`@Transactional`),
+  * i prostych kontrolerach MVC.
+
+**Minusy:**
+
+* **Czysty czas developmentu** może być dłuższy niż w frameworkach typu Django / Rails / Laravel, bo:
+
+  * więcej konfiguracji,
+  * mniej „z pudełka” jeśli chodzi o gotowy panel admina.
+* Konfiguracja **CI (GitHub Actions) + deploy na Render** to dodatkowa robota na start, choć jednorazowa.
+
+👉 **Wniosek:**
+Jeśli zespół zna Spring Boot – technologia *nie spowolni* budowy MVP i jest ok.
+Jeśli nie – istnieją stacki, na których to samo zrobisz szybciej (np. Django/Laravel + wbudowany admin).
+
+---
+
+## 2. Czy rozwiązanie będzie skalowalne?
+
+Realnie: **sąsiedzka biblioteka** = mało użytkowników, mało rekordów, mało ruchu.
+Skalowanie poziome to bardziej teoria niż realna potrzeba – ale:
+
+* Spring Boot + Postgres to **standard enterprise**, łatwy do:
+
+  * pionowego skalowania (większa maszyna na Render),
+  * poziomego (więcej instancji + wspólna baza + sticky session / stateless).
+* Logika rezerwacji „kto pierwszy, ten lepszy” i limit 3 sztuk można zaimplementować:
+
+  * transakcjami i blokadami na poziomie bazy (np. `SELECT ... FOR UPDATE`),
+  * co jest dużą zaletą klasycznej relacyjnej bazy i Spring Data.
+
+👉 **Wniosek:**
+Scalability jest zapewniona z dużym zapasem względem potrzeb produktu. Stack nie będzie wąskim gardłem.
+
+---
+
+## 3. Koszt utrzymania i rozwoju
+
+**Koszty infrastruktury:**
+
+* Java + Spring Boot mają **większe wymagania RAM/CPU** niż np. mały serwer PHP/Python/Node.
+  Na Render może to oznaczać:
+
+  * wyższy plan,
+  * szybsze wyjście poza „tanie” poziomy.
+* Postgres na Render jest typowo płatny od pewnego rozmiaru, ale patrząc na skalę projektu, to raczej niski koszt.
+
+**Koszty rozwoju:**
+
+* Spring Boot to technologia „enterprise”:
+
+  * dużo aktualizacji minor/patch, których *wypada pilnować* (Spring Security, Boot, JDK).
+  * ale narzędzia są stabilne i dobrze poznane – duża społeczność, dokumentacja.
+* W porównaniu z lżejszymi rozwiązaniami (np. Laravel na tanim hostingu, Django na jednym serwerze) koszt może być **wyższy**, ale nie dramatycznie – zależy głównie od:
+
+  * kompetencji zespołu,
+  * polityki hostingowej (ile środowisk, staging itp.).
+
+👉 **Wniosek:**
+Koszt będzie **akceptowalny**, ale nie minimalny możliwy. Java/Spring wymaga trochę „większej maszyny” niż absolutne minimum.
+
+---
+
+## 4. Czy potrzebujemy aż tak złożonego rozwiązania?
+
+Z perspektywy **architektury** – rozwiązanie nie jest przesadnie złożone:
+
+* Monolit Spring Boot + Thymeleaf + jedna baza Postgres + Render – to **prostsi wariant** świata Java (bez mikroserwisów, bez frontu SPA, bez message brokerów).
+* PRD nie wymaga WebSocketów, real-time, integracji z zewnętrznymi API – to wszystko można spokojnie zrobić w klasycznym MVC na serwerze.
+
+Natomiast z perspektywy **doboru technologii do skali biznesu**:
+
+* Dla **jednej małej biblioteki** Spring Boot może być „cięższy” niż potrzeba – ale:
+
+  * jeśli plan jest taki, żeby później dołożyć kolejne biblioteki, nowe funkcje, raportowanie itd., to zapas mocy technologicznej ma sens.
+  * jeśli to ma być „mały, jednorazowy projekt”, można by to samo zbudować w prostszym środowisku.
+
+👉 **Wniosek:**
+Rozwiązanie nie jest architektonicznie przekombinowane, ale technologicznie jest to „duży framework” do stosunkowo małego produktu.
+
+---
+
+## 5. Czy istnieje prostsze podejście, które spełni wymagania?
+
+Tak – **istnieją prostsze podejścia**, ale:
+
+* albo tracisz elastyczność,
+* albo zmieniasz ekosystem technologiczny.
+
+Przykłady:
+
+1. **Framework z mocnym panelem admina**
+
+   * **Django** (Python) z Django Admin,
+   * **Laravel** (PHP) z narzędziami typu Nova / Filament.
+   * Dla CRUD-ów (książki, kategorie, użytkownicy, rezerwacje) i prostego workflow dostajesz „panel” prawie za darmo, a UI użytkownika końcowego szyjesz tylko tam, gdzie potrzeba.
+   * Można byłoby **szybciej postawić MVP**, zwłaszcza część administracyjną.
+
+2. **No-code/low-code** (Airtable, AppSheet, Retool, itd.)
+
+   * Szybkie zbudowanie katalogu, CRUD użytkowników, prostych workflow.
+   * Ale:
+
+     * logika typu ban + statusy + limity + wiadomości systemowe zrobi się szybko niewygodna i trudna w utrzymaniu,
+     * ciężko potem rozbudowywać o bardziej skomplikowane reguły.
+
+3. **Lżejszy stack w Javie** praktycznie… nie istnieje w sensie „dużo prostszy niż Spring”, a nadal wygodny:
+
+   * Micronaut, Quarkus itp. są lżejsze runtime’owo, ale niekoniecznie prostsze w odczuciu początkującego zespołu.
+
+Podsumowując:
+
+* Jeśli **zespół jest Java/Spring-first** → obecny stack jest rozsądny.
+* Jeśli zespół jest elastyczny technologicznie i celem jest **jak najszybsze MVP** → warto rozważyć Django/Laravel.
+
+---
+
+## 6. Bezpieczeństwo – czy ten stack nam na to pozwala?
+
+PRD zakłada przetwarzanie **danych osobowych** (imię, nazwisko, adres, telefon) – to już jest PII i trzeba uważać.
+
+W tym zakresie Spring Boot + Postgres + Render pozwalają na wysoki poziom bezpieczeństwa, o ile:
+
+* **Uwierzytelnianie i autoryzacja**
+
+  * Użyjesz **Spring Security**:
+
+    * hasła trzymane jako `BCrypt`,
+    * podział ról: `USER` / `ADMIN`,
+    * ograniczenie panelu admina wyłącznie dla roli admin.
+  * Zaimplementujesz logikę banów (blokada akcji rezerwacji/wypożyczeń mimo zalogowania).
+
+* **Ochrona przed klasycznymi atakami webowymi**
+
+  * Thymeleaf domyślnie escapu­je dane → dobra baza przeciw XSS.
+  * Włączone CSRF dla formularzy (w Spring Security).
+  * Walidacja danych wejściowych (Bean Validation + sanity checks).
+
+* **Bezpieczeństwo danych w bazie**
+
+  * Render zapewnia HTTPS oraz szyfrowanie w transporcie,
+  * tajne dane (hasła do DB, sekret JWT itp.) trzymane w **zmiennych środowiskowych**, nie w repo.
+  * Backupy bazy (tu trzeba sprawdzić plan Render i/lub zrobić swoje).
+
+* **Logi i audyt**
+
+  * PRD zakłada metryki logowań i wypożyczeń – to idzie w parze z audytem:
+
+    * logowanie kluczowych operacji admina (aktywacja kont, ban, zmiana statusu książki),
+    * dbanie, aby logi nie wysypywały danych wrażliwych (np. pełnych haseł itp.).
+
+👉 **Wniosek:**
+Ten stack daje **bardzo solidne możliwości zabezpieczeń**. Kluczowe będzie poprawne użycie dostępnych narzędzi (Spring Security, konfiguracja Render, polityka haseł i ról), a nie sama technologia.
+
+---
+
+## Podsumowanie
+
+**Odpowiedź w skrócie:**
+
+* ✅ **Szybkie dostarczenie MVP** – tak, pod warunkiem że zespół zna Spring Boot.
+* ✅ **Skalowalność** – dużo większa niż będzie potrzebna dla jednej biblioteki.
+* ⚖️ **Koszt** – akceptowalny, ale nie najniższy możliwy (Java ≈ większe wymagania).
+* ⚠️ **Złożoność** – jak na skalę produktu stack jest „ciężki”, ale architektura (monolit + SSR) jest prosta.
+* ✅/⚠️ **Prostsze podejścia** – istnieją (Django/Laravel, a nawet low-code), ale kosztem zmiany ekosystemu i ewentualnej elastyczności.
+* ✅ **Bezpieczeństwo** – bardzo dobre możliwości, jeśli zastosujesz best practices.
+
+Jeśli chcesz, mogę w kolejnym kroku zaproponować **konkretną architekturę Spring Boot (moduły, pakiety, encje)** ściśle pod ten PRD, albo alternatywny „lekki” wariant np. w Django, do porównania 1:1.
