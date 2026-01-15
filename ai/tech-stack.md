@@ -24,11 +24,9 @@
 
 
 
-## CI/CD i hosting
+## CI/CD
 
 * **GitHub Actions** – narzędzie CI/CD do automatycznego budowania, testowania i wdrażania aplikacji z repozytorium.
-* **Render.com (Web Service)** – platforma hostingowa uruchamiająca aplikację Spring Boot w chmurze.
-* **Render.com PostgreSQL** – zarządzana instancja bazy PostgreSQL hostowana wraz z aplikacją.
 
 
 
