@@ -92,7 +92,6 @@ Poniższe funkcjonalności są wyraźnie wyłączone z zakresu MVP:
 * Powiadomienia E-mail/SMS (tylko komunikaty wewnątrz aplikacji).
 * Możliwość przedłużania terminu zwrotu (prolongata) przez użytkownika lub admina w systemie.
 * Historia wypożyczeń archiwalnych dla użytkownika (widoczne tylko bieżące).
-* Soft delete (książki są usuwane trwale).
   
 
 ## 5. Historyjki użytkowników
