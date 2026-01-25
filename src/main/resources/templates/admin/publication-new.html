@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Dodaj publikację (Admin)', ~{::main})}">
+<main>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Dodaj publikację</h1>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/admin/categories}">Kategorie</a>
+            <a class="btn btn-outline-secondary" th:href="@{/catalog}">Katalog</a>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="card card-body">
+        <form th:action="@{/admin/publications}" th:object="${form}" method="post" class="row g-3">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="col-12">
+                <label class="form-label">Tytuł</label>
+                <input class="form-control" th:field="*{title}"
+                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:errors="*{title}"></div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Autorzy (format: Imię Nazwisko; Imię Nazwisko)</label>
+                <input class="form-control" th:field="*{authors}"
+                       placeholder="np. Andrzej Sapkowski; Jan Kowalski"
+                       th:classappend="${#fields.hasErrors('authors')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:errors="*{authors}"></div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label class="form-label">Rodzaj</label>
+                <select class="form-select" th:field="*{kind}"
+                        th:classappend="${#fields.hasErrors('kind')} ? 'is-invalid' : ''">
+                    <option th:each="k : ${kinds}" th:value="${k}"
+                            th:text="${k.name() == 'BOOK' ? 'Książka' : 'Czasopismo'}">
+                    </option>
+                </select>
+                <div class="invalid-feedback" th:errors="*{kind}"></div>
+            </div>
+
+            <div class="col-12 col-md-8">
+                <label class="form-label">Kategoria</label>
+                <select class="form-select" th:field="*{categoryId}"
+                        th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid' : ''">
+                    <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                </select>
+                <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label class="form-label">ISBN (opcjonalnie)</label>
+                <input class="form-control" th:field="*{isbn}"
+                       th:classappend="${#fields.hasErrors('isbn')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:errors="*{isbn}"></div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label class="form-label">Rok wydania (opcjonalnie)</label>
+                <input class="form-control" type="number" th:field="*{year}"
+                       th:classappend="${#fields.hasErrors('year')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:errors="*{year}"></div>
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-primary w-100" type="submit">Dodaj publikację + 1 egzemplarz</button>
+            </div>
+
+            <div class="col-12 text-muted">
+                Numer inwentarzowy egzemplarza zostanie automatycznie wygenerowany w formacie LIB-YYYY-NNNNNN.
+            </div>
+        </form>
+    </div>
+</main>
+</html>

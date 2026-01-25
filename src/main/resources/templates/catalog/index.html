@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Katalog', ~{::main})}">
+<main>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Katalog</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/admin/publications/new}">+ Dodaj publikację (Admin)</a>
+    </div>
+
+    <form class="card card-body mb-4" method="get" th:action="@{/catalog}">
+        <div class="row g-2">
+            <div class="col-12 col-lg-6">
+                <label class="form-label">Szukaj (tytuł / autor)</label>
+                <input class="form-control" name="q" th:value="${q}" placeholder="np. 'Wiedźmin' albo 'Sapkowski'">
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <label class="form-label">Kategoria</label>
+                <select class="form-select" name="categoryId">
+                    <option value="" th:selected="${categoryId == null}">Wszystkie</option>
+                    <option th:each="c : ${categories}"
+                            th:value="${c.id}"
+                            th:text="${c.name}"
+                            th:selected="${categoryId != null and c.id == categoryId}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-12 col-lg-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100" type="submit">Szukaj</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="card card-body">
+        <div th:if="${page.empty}" class="text-muted">Brak wyników.</div>
+
+        <div class="table-responsive" th:if="${!page.empty}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Tytuł</th>
+                    <th>Autorzy</th>
+                    <th>Rodzaj</th>
+                    <th>Kategoria</th>
+                    <th>Statusy egzemplarzy</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${page.content}">
+                    <td>
+                        <a th:href="@{|/catalog/${p.id}|}" th:text="${p.title}"></a>
+                    </td>
+                    <td th:text="${p.authors}"></td>
+                    <td th:text="${p.kindLabel}"></td>
+                    <td th:text="${p.categoryName}"></td>
+                    <td>
+                        <span class="badge text-bg-success me-1" th:text="${'Dostępne: ' + p.available}"></span>
+                        <span class="badge text-bg-warning me-1" th:text="${'Zarezerw.: ' + p.reserved}"></span>
+                        <span class="badge text-bg-info me-1" th:text="${'Wypoż.: ' + p.loaned}"></span>
+                        <span class="badge text-bg-secondary" th:text="${'Niedost.: ' + p.unavailable}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginacja -->
+        <nav th:if="${page.totalPages > 1}" class="mt-3">
+            <ul class="pagination mb-0">
+                <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/catalog(q=${q}, categoryId=${categoryId}, page=${page.number})}">
+                        «
+                    </a>
+                </li>
+
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(1, page.totalPages)}"
+                    th:classappend="${i == page.number + 1} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/catalog(q=${q}, categoryId=${categoryId}, page=${i})}"
+                       th:text="${i}"></a>
+                </li>
+
+                <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/catalog(q=${q}, categoryId=${categoryId}, page=${page.number + 2})}">
+                        »
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</main>
+</html>

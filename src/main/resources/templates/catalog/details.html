@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Szczegóły publikacji', ~{::main})}">
+<main>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h1 class="h3 mb-1" th:text="${publication.title}"></h1>
+            <div class="text-muted" th:text="${publication.authors}"></div>
+        </div>
+        <a class="btn btn-outline-secondary" th:href="@{/catalog}">← Powrót</a>
+    </div>
+
+    <div class="card card-body mb-4">
+        <div class="row g-2">
+            <div class="col-12 col-md-4">
+                <strong>Rodzaj:</strong> <span th:text="${publication.kindLabel}"></span>
+            </div>
+            <div class="col-12 col-md-4">
+                <strong>Kategoria:</strong> <span th:text="${publication.categoryName}"></span>
+            </div>
+            <div class="col-12 col-md-4">
+                <strong>Rok:</strong>
+                <span th:text="${publication.year != null ? publication.year : '-'}"></span>
+            </div>
+            <div class="col-12">
+                <strong>ISBN:</strong>
+                <span th:text="${publication.isbn != null ? publication.isbn : '-'}"></span>
+            </div>
+        </div>
+
+        <!-- tutaj w przyszłości wejdzie przycisk "Rezerwuj" -->
+        <div class="mt-3 text-muted">
+            Rezerwacja zostanie dodana w kolejnej iteracji.
+        </div>
+    </div>
+
+    <div class="card card-body">
+        <h2 class="h5">Egzemplarze</h2>
+
+        <div th:if="${#lists.isEmpty(publication.copies)}" class="text-muted">
+            Brak egzemplarzy (lub wszystkie usunięte).
+        </div>
+
+        <div class="table-responsive" th:if="${!#lists.isEmpty(publication.copies)}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Numer inwentarzowy</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${publication.copies}">
+                    <td th:text="${c.inventoryCode}"></td>
+                    <td th:text="${c.statusLabel}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</html>
