@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 "/", "/register", "/login",
                                 "/css/**", "/js/**", "/images/**", "/webjars/**"
                         ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Użytkownicy (Admin)', ~{::main})}">
+<main>
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Użytkownicy</h1>
+        <a class="btn btn-outline-secondary" th:href="@{/}">Powrót</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${param.activated}">
+        Użytkownik został aktywowany.
+    </div>
+
+    <h2 class="h5 mt-4">Nieaktywne (do aktywacji)</h2>
+    <div class="card card-body mb-4">
+        <div th:if="${#lists.isEmpty(inactiveUsers)}" class="text-muted">Brak użytkowników do aktywacji.</div>
+
+        <div class="table-responsive" th:if="${!#lists.isEmpty(inactiveUsers)}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imię i nazwisko</th>
+                    <th>Login</th>
+                    <th>Telefon</th>
+                    <th>Utworzono</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${inactiveUsers}">
+                    <td th:text="${u.id}"></td>
+                    <td th:text="${u.firstName + ' ' + u.lastName}"></td>
+                    <td th:text="${u.login}"></td>
+                    <td th:text="${u.phone}"></td>
+                    <td th:text="${u.createdAt}"></td>
+                    <td class="text-end">
+                        <form th:action="@{|/admin/users/${u.id}/activate|}" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-sm btn-success" type="submit">Aktywuj</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h2 class="h5">Aktywne</h2>
+    <div class="card card-body mb-4">
+        <div th:if="${#lists.isEmpty(activeUsers)}" class="text-muted">Brak aktywnych użytkowników.</div>
+        <ul th:if="${!#lists.isEmpty(activeUsers)}" class="mb-0">
+            <li th:each="u : ${activeUsers}" th:text="${u.login + ' (' + u.firstName + ' ' + u.lastName + ')'}"></li>
+        </ul>
+    </div>
+
+    <h2 class="h5">Zbanowane</h2>
+    <div class="card card-body">
+        <div th:if="${#lists.isEmpty(bannedUsers)}" class="text-muted">Brak zbanowanych użytkowników.</div>
+        <ul th:if="${!#lists.isEmpty(bannedUsers)}" class="mb-0">
+            <li th:each="u : ${bannedUsers}" th:text="${u.login + ' (' + u.firstName + ' ' + u.lastName + ')'}"></li>
+        </ul>
+    </div>
+</main>
+</html>
