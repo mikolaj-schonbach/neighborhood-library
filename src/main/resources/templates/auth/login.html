@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Logowanie', ~{::main})}">
+<main>
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6 col-xl-5">
+
+            <h1 class="h3 mb-3">Logowanie</h1>
+
+            <div class="alert alert-danger" th:if="${param.error}">
+                Nieprawidłowy login lub hasło.
+            </div>
+
+            <div class="alert alert-warning" th:if="${param.inactive}">
+                Twoje konto jest <strong>nieaktywne</strong>. Udaj się do placówki w celu aktywacji.
+            </div>
+
+            <div class="alert alert-info" th:if="${param.logout}">
+                Zostałeś wylogowany.
+            </div>
+
+            <form th:action="@{/login}" method="post" class="card card-body">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="mb-3">
+                    <label class="form-label">Login</label>
+                    <input class="form-control" name="login" autocomplete="username" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hasło</label>
+                    <input type="password" class="form-control" name="password" autocomplete="current-password" required>
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Zaloguj</button>
+
+                <div class="text-center mt-3">
+                    Nie masz konta? <a th:href="@{/register}">Zarejestruj się</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</html>
