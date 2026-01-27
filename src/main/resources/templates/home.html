@@ -33,6 +33,17 @@
             </a>
         </div>
 
+        <div class="col-12 col-md-6">
+            <a class="text-decoration-none" th:href="@{/my/messages}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-1">Wiadomości</h2>
+                        <p class="text-muted mb-0">Sprawdź powiadomienia o wypożyczeniach i terminach.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         <div class="col-12 col-md-6" sec:authorize="hasRole('ADMIN')">
             <a class="text-decoration-none" th:href="@{/admin/users}">
                 <div class="card h-100 border-warning">

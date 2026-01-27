@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pl"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Moje wiadomości',
+            content=~{::content},
+            activeNav='messages'
+      )}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Wiadomości</h1>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div th:if="${#lists.isEmpty(messages)}" class="text-muted text-center py-5">
+        Brak wiadomości w skrzynce odbiorczej.
+    </div>
+
+    <div class="list-group" th:if="${!#lists.isEmpty(messages)}">
+        <div th:each="m : ${messages}"
+             class="list-group-item list-group-item-action"
+             th:classappend="${m.readAt == null} ? 'bg-light border-primary' : ''">
+
+            <div class="d-flex w-100 justify-content-between align-items-start mb-1">
+                <h5 class="mb-1"
+                    th:text="${m.title}"
+                    th:classappend="${m.readAt == null} ? 'fw-bold text-primary' : ''">
+                    Tytuł
+                </h5>
+                <small class="text-muted text-nowrap ms-2"
+                       th:text="${#temporals.format(m.createdAt, 'yyyy-MM-dd HH:mm')}">
+                    Data
+                </small>
+            </div>
+
+            <p class="mb-2 text-break" th:text="${m.body}">Treść wiadomości...</p>
+
+            <div class="d-flex gap-2 justify-content-end">
+                <!-- Przycisk "Oznacz jako przeczytane" (tylko dla nieprzeczytanych) -->
+                <form th:if="${m.readAt == null}" th:action="@{|/my/messages/${m.id}/read|}" method="post">
+                    <button class="btn btn-sm btn-outline-primary" type="submit">
+                        Oznacz jako przeczytaną
+                    </button>
+                </form>
+
+                <!-- Przycisk "Usuń" -->
+                <form th:action="@{|/my/messages/${m.id}/delete|}" method="post">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"
+                            onclick="return confirm('Czy na pewno chcesz usunąć tę wiadomość?')">
+                        Usuń
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

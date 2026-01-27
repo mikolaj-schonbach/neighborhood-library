@@ -42,6 +42,14 @@
                     </a>
                 </li>
 
+                <li class="nav-item" sec:authorize="isAuthenticated() and !isAnonymous()">
+                    <a class="nav-link"
+                       th:classappend="${activeNav == 'messages'} ? ' active' : ''"
+                       th:href="@{/my/messages}">
+                        Wiadomości
+                    </a>
+                </li>
+
                 <!-- Panel admina tylko dla ADMIN -->
                 <li class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
                     <a class="nav-link dropdown-toggle"
