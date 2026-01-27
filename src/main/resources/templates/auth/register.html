@@ -1,7 +1,13 @@
 <!doctype html>
-<html lang="pl" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout('Rejestracja', ~{::main})}">
-<main>
+<html lang="pl"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Rejestracja',
+            content=~{::content},
+            activeNav=null
+      )}">
+
+<div th:fragment="content">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-7 col-xl-6">
 
@@ -72,5 +78,6 @@
             </form>
         </div>
     </div>
-</main>
+</div>
+
 </html>

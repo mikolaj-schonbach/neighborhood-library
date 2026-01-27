@@ -2,6 +2,7 @@ package com.example.neighborhood_library.web.controller;
 
 import com.example.neighborhood_library.repo.CategoryRepository;
 import com.example.neighborhood_library.service.CatalogService;
+import com.example.neighborhood_library.service.ReservationService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 public class CatalogController {
 
     private final CatalogService catalogService;
+    private final ReservationService reservationService;
     private final CategoryRepository categoryRepository;
 
-    public CatalogController(CatalogService catalogService, CategoryRepository categoryRepository) {
+    public CatalogController(CatalogService catalogService, ReservationService reservationService, CategoryRepository categoryRepository) {
         this.catalogService = catalogService;
+        this.reservationService = reservationService;
         this.categoryRepository = categoryRepository;
     }
 
@@ -40,6 +43,7 @@ public class CatalogController {
     public String details(@PathVariable("id") long id, Model model) {
         model.addAttribute("publication", catalogService.getDetails(id));
         model.addAttribute("activeNav", "catalog");
+        model.addAttribute("canReserve", reservationService.canReserve(id));
 
         return "catalog/details";
     }

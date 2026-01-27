@@ -1,7 +1,12 @@
 <!doctype html>
 <html lang="pl" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout('Kategorie (Admin)', ~{::main})}">
-<main>
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Kategorie (Admin)',
+            content=~{::content},
+            activeNav='admin-categories'
+      )}">
+
+<div th:fragment="content">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Kategorie</h1>
     </div>
@@ -65,5 +70,6 @@
             </table>
         </div>
     </div>
-</main>
+</div>
+
 </html>

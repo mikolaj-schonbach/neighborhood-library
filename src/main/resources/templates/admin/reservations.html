@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pl"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Rezerwacje',
+            content=~{::content},
+            activeNav='admin-reservations'
+      )}">
+
+<div th:fragment="content">
+    <h1 class="h3 mb-3">Rezerwacje (oczekujące)</h1>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+            <tr>
+                <th>Użytkownik</th>
+                <th>Tytuł</th>
+                <th>Egzemplarz</th>
+                <th>Odbiór do</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${reservationsPage.content}">
+                <td th:text="${r.user.login}">login</td>
+                <td th:text="${r.copy.publication.title}">title</td>
+                <td th:text="${r.copy.inventoryCode}">code</td>
+                <td th:text="${#temporals.format(r.pickupUntil, 'yyyy-MM-dd HH:mm')}">date</td>
+                <td class="text-end">
+                    <div class="d-inline-flex gap-2">
+                        <form th:action="@{|/admin/reservations/${r.id}/issue|}" method="post">
+                            <button class="btn btn-success btn-sm" type="submit">Wydaj</button>
+                        </form>
+                        <form th:action="@{|/admin/reservations/${r.id}/cancel|}" method="post">
+                            <button class="btn btn-outline-danger btn-sm" type="submit">Anuluj</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:if="${reservationsPage.totalPages > 1}">
+        <ul class="pagination pagination-sm">
+            <li class="page-item" th:classappend="${reservationsPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{|/admin/reservations?page=${reservationsPage.number-1}|}">«</a>
+            </li>
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, reservationsPage.totalPages-1)}"
+                th:classappend="${i == reservationsPage.number} ? 'active'">
+                <a class="page-link" th:href="@{|/admin/reservations?page=${i}|}" th:text="${i+1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${reservationsPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{|/admin/reservations?page=${reservationsPage.number+1}|}">»</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+</html>

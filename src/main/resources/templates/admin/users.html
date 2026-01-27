@@ -1,10 +1,14 @@
 <!doctype html>
 <html lang="pl" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout('Użytkownicy (Admin)', ~{::main})}">
-<main>
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Użytkownicy (Admin)',
+            content=~{::content},
+            activeNav='admin-users'
+      )}">
+
+<div th:fragment="content">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Użytkownicy</h1>
-
     </div>
 
     <div class="alert alert-success" th:if="${param.activated}">
@@ -61,5 +65,6 @@
             <li th:each="u : ${bannedUsers}" th:text="${u.login + ' (' + u.firstName + ' ' + u.lastName + ')'}"></li>
         </ul>
     </div>
-</main>
+</div>
+
 </html>

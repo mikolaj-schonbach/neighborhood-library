@@ -1,7 +1,10 @@
 package com.example.neighborhood_library.domain;
 
 import jakarta.persistence.*;
-import java.time.Instant;
+
+import java.time.OffsetDateTime;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name = "copies")
@@ -11,7 +14,7 @@ public class Copy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false, fetch = LAZY)
     @JoinColumn(name = "publication_id", nullable = false)
     private Publication publication;
 
@@ -19,29 +22,19 @@ public class Copy {
     private String inventoryCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private CopyStatus status = CopyStatus.AVAILABLE;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private Instant deletedAt;
+    private OffsetDateTime deletedAt;
 
-    public Copy() {}
-
-    @PrePersist
-    void prePersist() {
-        if (createdAt == null) createdAt = Instant.now();
-    }
-
-    @PreUpdate
-    void preUpdate() {
-        updatedAt = Instant.now();
-    }
+    // getters/setters
 
     public Long getId() { return id; }
 
@@ -54,9 +47,12 @@ public class Copy {
     public CopyStatus getStatus() { return status; }
     public void setStatus(CopyStatus status) { this.status = status; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Instant getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
+    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public OffsetDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(OffsetDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

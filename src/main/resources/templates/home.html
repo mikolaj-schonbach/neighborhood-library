@@ -2,10 +2,15 @@
 <html lang="pl"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
-      th:replace="~{fragments/layout :: layout('Neighborhood Library', ~{::main})}">
-<main>
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Neighborhood Library',
+            content=~{::content},
+            activeNav=null
+      )}">
+
+<div th:fragment="content">
     <div class="p-4 bg-light rounded-3 mb-4">
-        <h1 class="h3 mb-2">Neighborhood Library</h1>
+        <h1 class="h3 mb-2">Biblioteka sąsiedzka</h1>
 
         <div sec:authorize="isAnonymous()" class="text-muted">
             Zaloguj się, aby przejść do katalogu oraz rezerwacji.
@@ -39,5 +44,6 @@
             </a>
         </div>
     </div>
-</main>
+</div>
+
 </html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pl"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Wypożyczenia',
+            content=~{::content},
+            activeNav='admin-loans'
+      )}">
+
+<div th:fragment="content">
+    <h1 class="h3 mb-3">Wypożyczenia (aktywne)</h1>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+            <tr>
+                <th>Użytkownik</th>
+                <th>Tytuł</th>
+                <th>Egzemplarz</th>
+                <th>Termin zwrotu</th>
+                <th class="text-end">Akcje</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="l : ${loansPage.content}">
+                <td th:text="${l.user.login}">login</td>
+                <td th:text="${l.copy.publication.title}">title</td>
+                <td th:text="${l.copy.inventoryCode}">code</td>
+                <td th:text="${l.dueDate}">date</td>
+                <td class="text-end">
+                    <form th:action="@{|/admin/loans/${l.id}/return|}" method="post">
+                        <button class="btn btn-primary btn-sm" type="submit">Przyjmij zwrot</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:if="${loansPage.totalPages > 1}">
+        <ul class="pagination pagination-sm">
+            <li class="page-item" th:classappend="${loansPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{|/admin/loans?page=${loansPage.number-1}|}">«</a>
+            </li>
+            <li class="page-item"
+                th:each="i : ${#numbers.sequence(0, loansPage.totalPages-1)}"
+                th:classappend="${i == loansPage.number} ? 'active'">
+                <a class="page-link" th:href="@{|/admin/loans?page=${i}|}" th:text="${i+1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${loansPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{|/admin/loans?page=${loansPage.number+1}|}">»</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+</html>

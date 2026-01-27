@@ -1,9 +1,13 @@
 <!doctype html>
 <html lang="pl" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
-      th:replace="~{fragments/layout :: layout('Katalog', ~{::main})}">
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Katalog',
+            content=~{::content},
+            activeNav='catalog'
+      )}">
 
-<main>
+<div th:fragment="content">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Katalog</h1>
         <a class="btn btn-outline-secondary"
@@ -11,7 +15,6 @@
            th:href="@{/admin/publications/new}">
             + Dodaj publikację (Admin)
         </a>
-
     </div>
 
     <form class="card card-body mb-4" method="get" th:action="@{/catalog}">
@@ -72,7 +75,6 @@
             </table>
         </div>
 
-        <!-- Paginacja -->
         <nav th:if="${page.totalPages > 1}" class="mt-3">
             <ul class="pagination mb-0">
                 <li class="page-item" th:classappend="${page.first} ? 'disabled'">
@@ -99,5 +101,6 @@
             </ul>
         </nav>
     </div>
-</main>
+</div>
+
 </html>
