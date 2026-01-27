@@ -29,6 +29,8 @@ public class AdminCategoriesController {
             model.addAttribute("categoryForm", new CategoryForm());
         }
         model.addAttribute("categories", categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name")));
+        model.addAttribute("activeNav", "admin-categories");
+
         return "admin/categories";
     }
 

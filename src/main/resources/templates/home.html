@@ -1,12 +1,43 @@
 <!doctype html>
-<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+<html lang="pl"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
       th:replace="~{fragments/layout :: layout('Neighborhood Library', ~{::main})}">
 <main>
-    <div class="p-4 bg-light rounded-3">
+    <div class="p-4 bg-light rounded-3 mb-4">
         <h1 class="h3 mb-2">Neighborhood Library</h1>
-        <p class="mb-0 text-muted">
-            Zalogowano pomyślnie. W kolejnych iteracjach pojawi się katalog, rezerwacje i panel admina.
-        </p>
+
+        <div sec:authorize="isAnonymous()" class="text-muted">
+            Zaloguj się, aby przejść do katalogu oraz rezerwacji.
+        </div>
+
+        <div sec:authorize="isAuthenticated() and !isAnonymous()" class="text-muted">
+            Wybierz, gdzie chcesz przejść:
+        </div>
+    </div>
+
+    <div class="row g-3" sec:authorize="isAuthenticated() and !isAnonymous()">
+        <div class="col-12 col-md-6">
+            <a class="text-decoration-none" th:href="@{/catalog}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-1">Katalog</h2>
+                        <p class="text-muted mb-0">Przeglądaj publikacje i sprawdzaj dostępność egzemplarzy.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6" sec:authorize="hasRole('ADMIN')">
+            <a class="text-decoration-none" th:href="@{/admin/users}">
+                <div class="card h-100 border-warning">
+                    <div class="card-body">
+                        <h2 class="h5 mb-1">Panel admina</h2>
+                        <p class="text-muted mb-0">Aktywuj użytkowników i zarządzaj katalogiem.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
 </main>
 </html>

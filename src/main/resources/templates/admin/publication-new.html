@@ -4,10 +4,6 @@
 <main>
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Dodaj publikację</h1>
-        <div class="d-flex gap-2">
-            <a class="btn btn-outline-secondary" th:href="@{/admin/categories}">Kategorie</a>
-            <a class="btn btn-outline-secondary" th:href="@{/catalog}">Katalog</a>
-        </div>
     </div>
 
     <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>

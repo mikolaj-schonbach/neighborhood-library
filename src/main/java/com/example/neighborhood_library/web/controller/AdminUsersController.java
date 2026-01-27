@@ -26,6 +26,8 @@ public class AdminUsersController {
         model.addAttribute("inactiveUsers", userRepository.findByStatus(UserStatus.INACTIVE));
         model.addAttribute("activeUsers", userRepository.findByStatus(UserStatus.ACTIVE));
         model.addAttribute("bannedUsers", userRepository.findByStatus(UserStatus.BANNED));
+        model.addAttribute("activeNav", "admin-users");
+
         return "admin/users";
     }
 

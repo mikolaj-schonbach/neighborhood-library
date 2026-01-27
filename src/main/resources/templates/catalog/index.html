@@ -1,10 +1,17 @@
 <!doctype html>
 <html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
       th:replace="~{fragments/layout :: layout('Katalog', ~{::main})}">
+
 <main>
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Katalog</h1>
-        <a class="btn btn-outline-secondary" th:href="@{/admin/publications/new}">+ Dodaj publikację (Admin)</a>
+        <a class="btn btn-outline-secondary"
+           sec:authorize="hasRole('ADMIN')"
+           th:href="@{/admin/publications/new}">
+            + Dodaj publikację (Admin)
+        </a>
+
     </div>
 
     <form class="card card-body mb-4" method="get" th:action="@{/catalog}">

@@ -30,6 +30,8 @@ public class CatalogController {
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("categories", categoryRepository.findNonEmptyForCatalog());
         model.addAttribute("page", catalogService.search(q, categoryId, page, pageSize));
+        model.addAttribute("activeNav", "catalog");
+
 
         return "catalog/index";
     }
@@ -37,6 +39,8 @@ public class CatalogController {
     @GetMapping("/{id}")
     public String details(@PathVariable("id") long id, Model model) {
         model.addAttribute("publication", catalogService.getDetails(id));
+        model.addAttribute("activeNav", "catalog");
+
         return "catalog/details";
     }
 }

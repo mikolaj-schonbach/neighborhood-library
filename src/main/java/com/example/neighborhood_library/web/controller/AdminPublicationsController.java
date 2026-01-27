@@ -32,6 +32,8 @@ public class AdminPublicationsController {
         }
         model.addAttribute("kinds", PublicationKind.values());
         model.addAttribute("categories", categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name")));
+        model.addAttribute("activeNav", "admin-publications");
+
         return "admin/publication-new";
     }
 
