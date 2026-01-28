@@ -43,10 +43,16 @@
                 </li>
 
                 <li class="nav-item" sec:authorize="isAuthenticated() and !isAnonymous()">
-                    <a class="nav-link"
+                    <a class="nav-link position-relative"
                        th:classappend="${activeNav == 'messages'} ? ' active' : ''"
                        th:href="@{/my/messages}">
                         Wiadomości
+                        <!-- BADGE Z LICZNIKIEM -->
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              th:if="${unreadMessagesCount > 0}">
+                                <span th:text="${unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}"></span>
+                                <span class="visually-hidden">nieprzeczytane wiadomości</span>
+                            </span>
                     </a>
                 </li>
 

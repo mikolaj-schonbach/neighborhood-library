@@ -37,7 +37,12 @@
             <a class="text-decoration-none" th:href="@{/my/messages}">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h2 class="h5 mb-1">Wiadomości</h2>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2 class="h5 mb-1">Wiadomości</h2>
+                            <!-- BADGE -->
+                            <span class="badge bg-danger rounded-pill" th:if="${unreadMessagesCount > 0}"
+                                  th:text="${unreadMessagesCount + ' nowych'}"></span>
+                        </div>
                         <p class="text-muted mb-0">Sprawdź powiadomienia o wypożyczeniach i terminach.</p>
                     </div>
                 </div>
