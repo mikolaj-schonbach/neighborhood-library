@@ -6,6 +6,7 @@ import com.example.neighborhood_library.support.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,15 +18,19 @@ public class AdminPublicationService {
     private final PublicationRepository publicationRepository;
     private final AuthorRepository authorRepository;
     private final CopyRepository copyRepository;
+    private final CurrentUserService currentUserService;
+    private final OperationService operationService;
 
     public AdminPublicationService(CategoryRepository categoryRepository,
                                    PublicationRepository publicationRepository,
                                    AuthorRepository authorRepository,
-                                   CopyRepository copyRepository) {
+                                   CopyRepository copyRepository, CurrentUserService currentUserService, OperationService operationService) {
         this.categoryRepository = categoryRepository;
         this.publicationRepository = publicationRepository;
         this.authorRepository = authorRepository;
         this.copyRepository = copyRepository;
+        this.currentUserService = currentUserService;
+        this.operationService = operationService;
     }
 
     @Transactional
@@ -85,6 +90,85 @@ public class AdminPublicationService {
 
         return saved.getId();
     }
+
+    @Transactional
+    public void editPublication(Long publicationId, String title, String authorsRaw,
+                                PublicationKind kind, Long categoryId, String isbn, Short year) {
+
+        Publication p = publicationRepository.findByIdWithDetails(publicationId)
+                .orElseThrow(() -> new NotFoundException("Publikacja nie istnieje"));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new NotFoundException("Kategoria nie istnieje"));
+
+        p.setTitle(title.trim());
+        p.setKind(kind);
+        p.setCategory(category);
+
+        String isbnNorm = (isbn == null) ? null : isbn.trim();
+        if (isbnNorm != null && isbnNorm.isBlank()) isbnNorm = null;
+        p.setIsbn(isbnNorm);
+
+        p.setYear(year);
+
+        // Aktualizacja autorów (uproszczona: czyścimy i dodajemy na nowo)
+        // W produkcyjnym kodzie lepiej byłoby sprawdzać diff, żeby nie usuwać ID
+        p.getPublicationAuthors().clear();
+
+        List<AuthorName> names = parseAuthors(authorsRaw);
+        for (AuthorName n : names) {
+            Author a = authorRepository.findByFirstNameAndLastName(n.firstName(), n.lastName())
+                    .orElseGet(() -> {
+                        Author created = new Author();
+                        created.setFirstName(n.firstName());
+                        created.setLastName(n.lastName());
+                        return authorRepository.save(created);
+                    });
+            p.addAuthor(a);
+        }
+
+        publicationRepository.save(p);
+
+        // Log
+        operationService.logAction(currentUserService.requireCurrentUser(), null, "PUBLICATION_UPDATED", null);
+    }
+
+    @Transactional
+    public void addCopy(Long publicationId) {
+        Publication p = publicationRepository.findById(publicationId)
+                .orElseThrow(() -> new NotFoundException("Publikacja nie istnieje"));
+
+        Copy copy = new Copy();
+        copy.setPublication(p);
+        copy.setStatus(CopyStatus.AVAILABLE);
+        // Tymczasowy kod, nadpisany zaraz po save
+        copy.setInventoryCode("TMP-" + UUID.randomUUID());
+
+        Copy saved = copyRepository.save(copy);
+        saved.setInventoryCode(generateInventoryCode(saved.getId()));
+        copyRepository.save(saved);
+
+        operationService.logAction(currentUserService.requireCurrentUser(), null, "COPY_CREATED", saved);
+    }
+
+    @Transactional
+    public void deleteCopy(Long copyId) {
+        Copy copy = copyRepository.findById(copyId)
+                .orElseThrow(() -> new NotFoundException("Egzemplarz nie istnieje"));
+
+        // Reguła biznesowa: nie usuwamy, jeśli wypożyczona lub zarezerwowana
+        if (copy.getStatus() == CopyStatus.LOANED || copy.getStatus() == CopyStatus.RESERVED) {
+            throw new IllegalStateException("Nie można usunąć egzemplarza, który jest wypożyczony lub zarezerwowany.");
+        }
+
+        // Soft delete
+        copy.setDeletedAt(OffsetDateTime.now());
+        copy.setStatus(CopyStatus.UNAVAILABLE);
+        copyRepository.save(copy);
+
+        operationService.logAction(currentUserService.requireCurrentUser(), null, "COPY_DELETED", copy);
+    }
+
 
     private String generateInventoryCode(long copyId) {
         int yyyy = Year.now().getValue();

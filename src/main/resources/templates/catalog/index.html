@@ -70,6 +70,10 @@
                         <span class="badge text-bg-info me-1" th:text="${'Wypoż.: ' + p.loaned}"></span>
                         <span class="badge text-bg-secondary" th:text="${'Niedost.: ' + p.unavailable}"></span>
                     </td>
+                    <!-- Dodano kolumnę akcji dla Admina -->
+                    <td class="text-end" sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{|/admin/publications/${p.id}/edit|}" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                    </td>
                 </tr>
                 </tbody>
             </table>

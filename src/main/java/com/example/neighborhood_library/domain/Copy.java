@@ -34,6 +34,18 @@ public class Copy {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @PrePersist
+    void prePersist() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = OffsetDateTime.now();
+    }
+
     // getters/setters
 
     public Long getId() { return id; }

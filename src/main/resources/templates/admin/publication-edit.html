@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Edycja publikacji',
+            content=~{::content},
+            activeNav='admin-publications'
+      )}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Edycja publikacji</h1>
+        <a class="btn btn-outline-secondary" th:href="@{|/catalog/${publication.id}|}">Podgląd w katalogu</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <div class="row g-4">
+        <!-- Lewa kolumna: Dane bibliograficzne -->
+        <div class="col-12 col-lg-7">
+            <div class="card card-body">
+                <h2 class="h5 mb-3">Dane książki</h2>
+                <form th:action="@{|/admin/publications/${publication.id}/edit|}" th:object="${form}" method="post" class="row g-3">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                    <div class="col-12">
+                        <label class="form-label">Tytuł</label>
+                        <input class="form-control" th:field="*{title}"
+                               th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Autorzy (rozdzieleni średnikami)</label>
+                        <input class="form-control" th:field="*{authors}"
+                               th:classappend="${#fields.hasErrors('authors')} ? 'is-invalid' : ''">
+                        <div class="invalid-feedback" th:errors="*{authors}"></div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Kategoria</label>
+                        <select class="form-select" th:field="*{categoryId}">
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Rodzaj</label>
+                        <select class="form-select" th:field="*{kind}">
+                            <option th:each="k : ${kinds}" th:value="${k}"
+                                    th:text="${k.name() == 'BOOK' ? 'Książka' : 'Czasopismo'}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">ISBN</label>
+                        <input class="form-control" th:field="*{isbn}">
+                        <div class="invalid-feedback" th:errors="*{isbn}"></div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Rok</label>
+                        <input class="form-control" type="number" th:field="*{year}">
+                        <div class="invalid-feedback" th:errors="*{year}"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <button class="btn btn-primary w-100" type="submit">Zapisz zmiany</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Prawa kolumna: Zarządzanie egzemplarzami -->
+        <div class="col-12 col-lg-5">
+            <div class="card card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Egzemplarze</h2>
+                    <form th:action="@{|/admin/publications/${publication.id}/copies/add|}" method="post">
+                        <button class="btn btn-sm btn-success" type="submit">+ Dodaj</button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                        <tr>
+                            <th>Kod</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="c : ${publication.copies}" th:if="${c.deletedAt == null}">
+                            <td th:text="${c.inventoryCode}"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${c.status.name() == 'AVAILABLE' ? 'text-bg-success' :
+                                                       (c.status.name() == 'LOANED' ? 'text-bg-info' :
+                                                       (c.status.name() == 'RESERVED' ? 'text-bg-warning' : 'text-bg-secondary'))}"
+                                      th:text="${c.status}">
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <form th:if="${c.status.name() == 'AVAILABLE' or c.status.name() == 'UNAVAILABLE'}"
+                                      th:action="@{|/admin/publications/${publication.id}/copies/${c.id}/delete|}"
+                                      method="post">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit"
+                                            onclick="return confirm('Czy na pewno chcesz usunąć ten egzemplarz?')">
+                                        ×
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>
