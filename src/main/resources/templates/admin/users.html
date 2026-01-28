@@ -15,6 +15,13 @@
         Użytkownik został aktywowany.
     </div>
 
+    <div class="alert alert-warning" th:if="${param.banned}">
+        Użytkownik został zablokowany.
+    </div>
+    <div class="alert alert-info" th:if="${param.unbanned}">
+        Użytkownik został odblokowany.
+    </div>
+
     <h2 class="h5 mt-4">Nieaktywne (do aktywacji)</h2>
     <div class="card card-body mb-4">
         <div th:if="${#lists.isEmpty(inactiveUsers)}" class="text-muted">Brak użytkowników do aktywacji.</div>
@@ -53,17 +60,76 @@
     <h2 class="h5">Aktywne</h2>
     <div class="card card-body mb-4">
         <div th:if="${#lists.isEmpty(activeUsers)}" class="text-muted">Brak aktywnych użytkowników.</div>
-        <ul th:if="${!#lists.isEmpty(activeUsers)}" class="mb-0">
-            <li th:each="u : ${activeUsers}" th:text="${u.login + ' (' + u.firstName + ' ' + u.lastName + ')'}"></li>
-        </ul>
+
+        <div class="table-responsive" th:if="${!#lists.isEmpty(activeUsers)}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Login</th>
+                    <th>Imię i nazwisko</th>
+                    <th>Telefon</th>
+                    <th class="text-end">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${activeUsers}">
+                    <td th:text="${u.login}"></td>
+                    <td th:text="${u.firstName + ' ' + u.lastName}"></td>
+                    <td th:text="${u.phone}"></td>
+                    <td class="text-end">
+                        <!-- Warunek: Pokaż przycisk TYLKO JEŚLI to nie jest admin -->
+                        <form th:action="@{|/admin/users/${u.id}/ban|}" method="post" class="d-inline"
+                              th:if="${u.accountRole.name() != 'ADMIN'}">
+
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-sm btn-outline-danger" type="submit"
+                                    onclick="return confirm('Czy na pewno chcesz zablokować tego użytkownika?')">
+                                Zablokuj
+                            </button>
+                        </form>
+
+                        <!-- Opcjonalnie: informacja dlaczego brak przycisku -->
+                        <span class="text-muted small fst-italic"
+                              th:if="${u.accountRole.name() == 'ADMIN'}">
+                                (Admin)
+                            </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <h2 class="h5">Zbanowane</h2>
     <div class="card card-body">
         <div th:if="${#lists.isEmpty(bannedUsers)}" class="text-muted">Brak zbanowanych użytkowników.</div>
-        <ul th:if="${!#lists.isEmpty(bannedUsers)}" class="mb-0">
-            <li th:each="u : ${bannedUsers}" th:text="${u.login + ' (' + u.firstName + ' ' + u.lastName + ')'}"></li>
-        </ul>
+
+        <div class="table-responsive" th:if="${!#lists.isEmpty(bannedUsers)}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th>Login</th>
+                    <th>Imię i nazwisko</th>
+                    <th class="text-end">Akcje</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${bannedUsers}">
+                    <td th:text="${u.login}"></td>
+                    <td th:text="${u.firstName + ' ' + u.lastName}"></td>
+                    <td class="text-end">
+                        <form th:action="@{|/admin/users/${u.id}/unban|}" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button class="btn btn-sm btn-outline-success" type="submit"
+                                    onclick="return confirm('Przywrócić dostęp temu użytkownikowi?')">
+                                Odblokuj
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

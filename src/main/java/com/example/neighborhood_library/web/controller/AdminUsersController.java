@@ -3,6 +3,7 @@ package com.example.neighborhood_library.web.controller;
 import com.example.neighborhood_library.domain.UserStatus;
 import com.example.neighborhood_library.repo.UserRepository;
 import com.example.neighborhood_library.service.UserAdminService;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -35,5 +36,23 @@ public class AdminUsersController {
     public String activate(@PathVariable("id") long id) {
         userAdminService.activateUser(id);
         return "redirect:/admin/users?activated";
+    }
+
+    @PostMapping("/{id}/ban")
+    public String ban(@PathVariable("id") long id, RedirectAttributes ra) {
+        try {
+            userAdminService.banUser(id);
+            return "redirect:/admin/users?banned";
+        } catch (IllegalArgumentException e) {
+            // Przekazujemy komunikat błędu do widoku
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/users";
+        }
+    }
+
+    @PostMapping("/{id}/unban")
+    public String unban(@PathVariable("id") long id) {
+        userAdminService.unbanUser(id);
+        return "redirect:/admin/users?unbanned";
     }
 }
