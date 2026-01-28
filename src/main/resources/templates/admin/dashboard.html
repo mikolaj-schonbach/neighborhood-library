@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Panel Administratora',
+            content=~{::content},
+            activeNav='admin-dashboard'
+      )}">
+
+<div th:fragment="content">
+    <h1 class="h3 mb-4">Pulpit Administratora</h1>
+
+    <div class="row g-4">
+        <!-- 1. Nowi użytkownicy -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 text-center border-primary">
+                <div class="card-header bg-primary text-white">Nowi użytkownicy</div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h2 class="display-4 fw-bold text-primary" th:text="${inactiveUsersCount}">0</h2>
+                    <p class="card-text text-muted">oczekuje na aktywację</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a th:href="@{/admin/users}" class="btn btn-outline-primary w-100 stretched-link">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Rezerwacje -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 text-center border-success">
+                <div class="card-header bg-success text-white">Oczekujące rezerwacje</div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h2 class="display-4 fw-bold text-success" th:text="${activeReservationsCount}">0</h2>
+                    <p class="card-text text-muted">do wydania</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a th:href="@{/admin/reservations}" class="btn btn-outline-success w-100 stretched-link">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Przetrzymania -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 text-center border-danger">
+                <div class="card-header bg-danger text-white">Przetrzymane książki</div>
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h2 class="display-4 fw-bold text-danger" th:text="${overdueLoansCount}">0</h2>
+                    <p class="card-text text-muted">po terminie</p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a th:href="@{/admin/loans}" class="btn btn-outline-danger w-100 stretched-link">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="h5 mb-3">Szybkie skróty</h2>
+    <div class="row g-3">
+        <div class="col-6 col-md-3">
+            <a th:href="@{/admin/publications/new}" class="btn btn-outline-secondary w-100 py-3">
+                + Dodaj publikację
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a th:href="@{/admin/categories}" class="btn btn-outline-secondary w-100 py-3">
+                Kategorie
+            </a>
+        </div>
+    </div>
+</div>
+
+</html>

@@ -39,4 +39,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           AND pickup_until < now()
         """, nativeQuery = true)
     int expireOverdue();
+
+    // Do dashboardu
+    long countByStatus(ReservationStatus status);
 }

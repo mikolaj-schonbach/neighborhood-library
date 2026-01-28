@@ -45,7 +45,8 @@
         </div>
 
         <div class="col-12 col-md-6" sec:authorize="hasRole('ADMIN')">
-            <a class="text-decoration-none" th:href="@{/admin/users}">
+            <!-- Zmieniamy link z /admin/users na /admin (dashboard) -->
+            <a class="text-decoration-none" th:href="@{/admin}">
                 <div class="card h-100 border-warning">
                     <div class="card-body">
                         <h2 class="h5 mb-1">Panel admina</h2>

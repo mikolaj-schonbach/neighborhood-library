@@ -19,4 +19,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @EntityGraph(attributePaths = {"user", "copy", "copy.publication"})
     List<Loan> findByDueDateAndReturnedAtIsNull(LocalDate dueDate);
+
+    // Do dashboardu: licznik przetrzymanych (termin minął < dzisiaj i nie oddano)
+    long countByDueDateBeforeAndReturnedAtIsNull(LocalDate date);
 }
