@@ -22,17 +22,21 @@ public class AdminCirculationService {
     private final LoanRepository loanRepository;
     private final MessageRepository messageRepository;
     private final Clock clock;
+    private final CurrentUserService currentUserService;
+    private final OperationService operationService;
 
     public AdminCirculationService(
             ReservationRepository reservationRepository,
             LoanRepository loanRepository,
             MessageRepository messageRepository,
-            Clock clock
+            Clock clock, CurrentUserService currentUserService, OperationService operationService
     ) {
         this.reservationRepository = reservationRepository;
         this.loanRepository = loanRepository;
         this.messageRepository = messageRepository;
         this.clock = clock;
+        this.currentUserService = currentUserService;
+        this.operationService = operationService;
     }
 
     @Transactional(readOnly = true)
@@ -53,6 +57,9 @@ public class AdminCirculationService {
         r.setStatus(ReservationStatus.CANCELLED_BY_ADMIN);
         r.setCancelledAt(now);
         reservationRepository.save(r);
+
+        User admin = currentUserService.requireCurrentUser();
+        operationService.logAction(admin, r.getUser(), "RESERVATION_CANCELLED_BY_ADMIN", r.getCopy());
     }
 
     @Transactional
@@ -92,6 +99,10 @@ public class AdminCirculationService {
         m.setCreatedAt(now);
         messageRepository.save(m);
 
+        User admin = currentUserService.requireCurrentUser();
+        operationService.logAction(admin, r.getUser(), "LOAN_CREATED", r.getCopy());
+
+
         return saved;
     }
 
@@ -111,5 +122,9 @@ public class AdminCirculationService {
 
         loan.setReturnedAt(OffsetDateTime.now(clock));
         loanRepository.save(loan); // DB trigger przeliczy copy.status
+
+        User admin = currentUserService.requireCurrentUser();
+        operationService.logAction(admin, loan.getUser(), "LOAN_RETURNED", loan.getCopy());
+
     }
 }

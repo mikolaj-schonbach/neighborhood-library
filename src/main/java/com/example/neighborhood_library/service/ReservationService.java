@@ -21,6 +21,7 @@ public class ReservationService {
     private final CopyRepository copyRepository;
     private final UserRepository userRepository;
     private final Clock clock;
+    private final OperationService operationService;
 
     // MVP: stałe; jeśli chcesz — przerobimy na properties
     private static final int PICKUP_DAYS = 3;
@@ -29,12 +30,13 @@ public class ReservationService {
             ReservationRepository reservationRepository,
             CopyRepository copyRepository,
             UserRepository userRepository,
-            Clock clock
+            Clock clock, OperationService operationService
     ) {
         this.reservationRepository = reservationRepository;
         this.copyRepository = copyRepository;
         this.userRepository = userRepository;
         this.clock = clock;
+        this.operationService = operationService;
     }
 
     @Transactional
@@ -54,8 +56,12 @@ public class ReservationService {
         r.setPickupUntil(now.plusDays(PICKUP_DAYS));
         r.setStatus(ReservationStatus.ACTIVE);
 
+
+
         try {
-            return reservationRepository.save(r);
+            Reservation saved = reservationRepository.save(r);
+            operationService.logAction(user, user, "RESERVATION_CREATED", copy);
+            return saved;
         } catch (DataAccessException ex) {
             // DB ma triggery i wyjątki (limit 3, status usera, status kopii) — mapujemy na czytelny komunikat
             String msg = (ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
@@ -84,7 +90,9 @@ public class ReservationService {
         OffsetDateTime now = OffsetDateTime.now(clock);
         r.setStatus(ReservationStatus.CANCELLED_BY_USER);
         r.setCancelledAt(now);
+        User user = r.getUser();
         reservationRepository.save(r);
+        operationService.logAction(user, user, "RESERVATION_CANCELLED", r.getCopy());
     }
 
     public List<Reservation> myActiveReservations(Long userId) {

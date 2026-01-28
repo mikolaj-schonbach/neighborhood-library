@@ -15,11 +15,13 @@ public class UserAdminService {
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
     private final CurrentUserService currentUserService;
+    private final OperationService operationService;
 
-    public UserAdminService(UserRepository userRepository, MessageRepository messageRepository, CurrentUserService currentUserService) {
+    public UserAdminService(UserRepository userRepository, MessageRepository messageRepository, CurrentUserService currentUserService, OperationService operationService) {
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.currentUserService = currentUserService;
+        this.operationService = operationService;
     }
 
     @Transactional
@@ -28,8 +30,12 @@ public class UserAdminService {
                 .orElseThrow(() -> new NotFoundException("Nie znaleziono użytkownika id=" + userId));
 
         user.setStatus(UserStatus.ACTIVE);
+
+        User currentUser = currentUserService.requireCurrentUser();
         // save niekonieczny przy JPA w transakcji, ale może zostać:
         userRepository.save(user);
+
+        operationService.logAction(currentUser, user, "USER_ACTIVATED", null);
     }
 
     @Transactional
@@ -57,10 +63,14 @@ public class UserAdminService {
         sendMessage(targetUser, MessageType.ACCOUNT_BANNED, "Konto zablokowane",
                 "Twoje konto zostało zablokowane. Skontaktuj się z biblioteką w celu wyjaśnienia.");
 
+        operationService.logAction(currentUser, targetUser, "USER_BANNED", null);
     }
 
     @Transactional
     public void unbanUser(long userId) {
+
+        User currentUser = currentUserService.requireCurrentUser();
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Nie znaleziono użytkownika id=" + userId));
 
@@ -69,6 +79,8 @@ public class UserAdminService {
 
         sendMessage(user, MessageType.ACCOUNT_UNBANNED, "Konto odblokowane",
                 "Blokada Twojego konta została zdjęta.");
+
+        operationService.logAction(currentUser, user, "USER_BANNED", null);
     }
 
     private void sendMessage(User user, MessageType type, String title, String body) {
