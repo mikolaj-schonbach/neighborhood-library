@@ -58,12 +58,23 @@
                         Panel admina
                     </a>
                     <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" th:href="@{/admin}">Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" th:href="@{/admin/users}">Użytkownicy</a></li>
                         <li><a class="dropdown-item" th:href="@{/admin/categories}">Kategorie</a></li>
                         <li><a class="dropdown-item" th:href="@{/admin/publications/new}">Dodaj publikację</a></li>
                         <li><a class="dropdown-item" th:href="@{/admin/reservations}">Rezerwacje</a></li>
                         <li><a class="dropdown-item" th:href="@{/admin/loans}">Wypożyczenia</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/info}">Edytuj "O bibliotece"</a></li>
                     </ul>
+                </li>
+
+                <!-- Link do modala "O bibliotece" (widoczny dla wszystkich) -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#libraryInfoModal">
+                        O bibliotece
+                    </a>
                 </li>
             </ul>
 
@@ -102,6 +113,34 @@
 <main class="container py-4">
     <div th:replace="${content}"></div>
 </main>
+
+<!-- Modal: O bibliotece -->
+<div class="modal fade" id="libraryInfoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="infoModalLabel">O bibliotece</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" th:if="${libraryInfo != null}">
+                <h6 class="fw-bold">Adres</h6>
+                <!-- Dodano style="white-space: pre-wrap;" -->
+                <p class="mb-3" style="white-space: pre-wrap;" th:text="${libraryInfo.address}"></p>
+
+                <h6 class="fw-bold">Godziny otwarcia</h6>
+                <!-- Dodano style="white-space: pre-wrap;" -->
+                <p class="mb-3" style="white-space: pre-wrap;" th:text="${libraryInfo.openingHours}"></p>
+
+                <h6 class="fw-bold">Regulamin</h6>
+                <!-- Dodano style="white-space: pre-wrap;" -->
+                <p class="small text-muted" style="white-space: pre-wrap;" th:text="${libraryInfo.rules}"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
