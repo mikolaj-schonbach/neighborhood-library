@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Mój profil',
+            content=~{::content},
+            activeNav='profile'
+      )}">
+
+<div th:fragment="content">
+    <h1 class="h3 mb-4">Mój profil</h1>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div class="row g-4">
+        <!-- Dane użytkownika (Read-only) -->
+        <div class="col-12 col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Twoje dane</div>
+                <div class="card-body">
+                    <p><strong>Imię i nazwisko:</strong> <span th:text="${user.firstName + ' ' + user.lastName}"></span></p>
+                    <p><strong>Login:</strong> <span th:text="${user.login}"></span></p>
+                    <p><strong>Telefon:</strong> <span th:text="${user.phone}"></span></p>
+                    <p><strong>Adres:</strong> <span th:text="${user.address}"></span></p>
+                    <p class="text-muted small mb-0">
+                        * Aby zmienić dane kontaktowe, skontaktuj się z bibliotekarzem.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zmiana hasła -->
+        <div class="col-12 col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Zmiana hasła</div>
+                <div class="card-body">
+                    <form th:action="@{/my/profile/password}" th:object="${passwordForm}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="mb-3">
+                            <label class="form-label">Stare hasło</label>
+                            <input type="password" class="form-control" th:field="*{oldPassword}"
+                                   th:classappend="${#fields.hasErrors('oldPassword')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:errors="*{oldPassword}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nowe hasło</label>
+                            <input type="password" class="form-control" th:field="*{newPassword}"
+                                   th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:errors="*{newPassword}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Powtórz nowe hasło</label>
+                            <input type="password" class="form-control" th:field="*{confirmNewPassword}"
+                                   th:classappend="${#fields.hasErrors('confirmNewPassword')} ? 'is-invalid' : ''">
+                            <div class="invalid-feedback" th:errors="*{confirmNewPassword}"></div>
+                        </div>
+
+                        <button class="btn btn-primary w-100" type="submit">Zmień hasło</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

@@ -5,6 +5,7 @@ import com.example.neighborhood_library.domain.User;
 import com.example.neighborhood_library.domain.UserStatus;
 import com.example.neighborhood_library.repo.UserRepository;
 import com.example.neighborhood_library.support.DuplicateLoginException;
+import com.example.neighborhood_library.support.NotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,5 +54,27 @@ public class AuthService {
             // gdyby równoległa rejestracja przeszła existsByLogin()
             throw new DuplicateLoginException("Login jest już zajęty.");
         }
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Użytkownik nie istnieje"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Stare hasło jest nieprawidłowe.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void resetPasswordByAdmin(Long userId, String newRawPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Użytkownik nie istnieje"));
+
+        user.setPasswordHash(passwordEncoder.encode(newRawPassword));
+        userRepository.save(user);
     }
 }

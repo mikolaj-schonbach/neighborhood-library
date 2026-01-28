@@ -1,7 +1,9 @@
 package com.example.neighborhood_library.web.controller;
 
+import com.example.neighborhood_library.domain.User;
 import com.example.neighborhood_library.domain.UserStatus;
 import com.example.neighborhood_library.repo.UserRepository;
+import com.example.neighborhood_library.service.AuthService;
 import com.example.neighborhood_library.service.UserAdminService;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.data.domain.Sort;
@@ -15,10 +17,12 @@ public class AdminUsersController {
 
     private final UserRepository userRepository;
     private final UserAdminService userAdminService;
+    private final AuthService authService;
 
-    public AdminUsersController(UserRepository userRepository, UserAdminService userAdminService) {
+    public AdminUsersController(UserRepository userRepository, UserAdminService userAdminService, AuthService authService) {
         this.userRepository = userRepository;
         this.userAdminService = userAdminService;
+        this.authService = authService;
     }
 
     @GetMapping
@@ -54,5 +58,32 @@ public class AdminUsersController {
     public String unban(@PathVariable("id") long id) {
         userAdminService.unbanUser(id);
         return "redirect:/admin/users?unbanned";
+    }
+
+    // Formularz resetu hasła (GET)
+    @GetMapping("/{id}/reset-password")
+    public String resetPasswordForm(@PathVariable("id") long id, Model model) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        model.addAttribute("user", user);
+        model.addAttribute("activeNav", "admin-users");
+        return "admin/user-reset-password";
+    }
+
+    // Wykonanie resetu (POST)
+    @PostMapping("/{id}/reset-password")
+    public String resetPassword(@PathVariable("id") long id,
+                                @RequestParam("newPassword") String newPassword,
+                                RedirectAttributes ra) {
+        if (newPassword == null || newPassword.isBlank()) {
+            ra.addFlashAttribute("errorMessage", "Hasło nie może być puste.");
+            return "redirect:/admin/users/" + id + "/reset-password";
+        }
+
+        authService.resetPasswordByAdmin(id, newPassword);
+        ra.addFlashAttribute("successMessage", "Hasło zostało zresetowane. Przekaż je użytkownikowi.");
+        // Wracamy do listy użytkowników (można zmienić na powrót do formularza, jeśli wolisz)
+        return "redirect:/admin/users";
     }
 }

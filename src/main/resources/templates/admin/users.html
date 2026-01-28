@@ -88,6 +88,13 @@
                             </button>
                         </form>
 
+                        <!-- Przycisk resetu hasła -->
+                        <a th:href="@{|/admin/users/${u.id}/reset-password|}"
+                           class="btn btn-sm btn-outline-secondary"
+                           title="Resetuj hasło">
+                            Hasło
+                        </a>
+
                         <!-- Opcjonalnie: informacja dlaczego brak przycisku -->
                         <span class="text-muted small fst-italic"
                               th:if="${u.accountRole.name() == 'ADMIN'}">
