@@ -4,6 +4,7 @@ import com.example.neighborhood_library.domain.*;
 import com.example.neighborhood_library.repo.MessageRepository;
 import com.example.neighborhood_library.repo.UserRepository;
 import com.example.neighborhood_library.support.NotFoundException;
+import com.example.neighborhood_library.web.dto.EditProfileForm;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +82,23 @@ public class UserAdminService {
                 "Blokada Twojego konta została zdjęta.");
 
         operationService.logAction(currentUser, user, "USER_BANNED", null);
+    }
+
+    @Transactional
+    public void updateUser(Long userId, EditProfileForm form) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono użytkownika id=" + userId));
+
+        user.setFirstName(form.getFirstName().trim());
+        user.setLastName(form.getLastName().trim());
+        user.setPhone(form.getPhone().trim());
+        user.setAddress(form.getAddress().trim());
+
+        userRepository.save(user);
+
+        // Logujemy operację
+        User admin = currentUserService.requireCurrentUser();
+        operationService.logAction(admin, user, "USER_PROFILE_UPDATED_BY_ADMIN", null);
     }
 
     private void sendMessage(User user, MessageType type, String title, String body) {

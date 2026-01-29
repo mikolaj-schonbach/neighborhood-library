@@ -5,6 +5,9 @@ import com.example.neighborhood_library.domain.UserStatus;
 import com.example.neighborhood_library.repo.UserRepository;
 import com.example.neighborhood_library.service.AuthService;
 import com.example.neighborhood_library.service.UserAdminService;
+import com.example.neighborhood_library.web.dto.EditProfileForm;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -84,6 +87,43 @@ public class AdminUsersController {
         authService.resetPasswordByAdmin(id, newPassword);
         ra.addFlashAttribute("successMessage", "Hasło zostało zresetowane. Przekaż je użytkownikowi.");
         // Wracamy do listy użytkowników (można zmienić na powrót do formularza, jeśli wolisz)
+        return "redirect:/admin/users";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editUserForm(@PathVariable("id") long id, Model model) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!model.containsAttribute("form")) {
+            model.addAttribute("form", new EditProfileForm(user));
+        }
+
+        model.addAttribute("userId", id);
+        model.addAttribute("userLogin", user.getLogin()); // Do wyświetlenia w nagłówku
+        model.addAttribute("activeNav", "admin-users");
+
+        return "admin/user-edit";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String updateUser(@PathVariable("id") long id,
+                             @Valid @ModelAttribute("form") EditProfileForm form,
+                             BindingResult bindingResult,
+                             RedirectAttributes ra,
+                             Model model) {
+
+        if (bindingResult.hasErrors()) {
+            User user = userRepository.findById(id).orElseThrow();
+            model.addAttribute("userId", id);
+            model.addAttribute("userLogin", user.getLogin());
+            model.addAttribute("activeNav", "admin-users");
+            return "admin/user-edit";
+        }
+
+        userAdminService.updateUser(id, form);
+        ra.addFlashAttribute("successMessage", "Dane użytkownika zostały zaktualizowane.");
+
         return "redirect:/admin/users";
     }
 }

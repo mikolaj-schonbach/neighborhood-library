@@ -95,6 +95,13 @@
                             Hasło
                         </a>
 
+                        <!-- NOWY PRZYCISK EDYCJI -->
+                        <a th:href="@{|/admin/users/${u.id}/edit|}"
+                           class="btn btn-sm btn-outline-primary"
+                           title="Edytuj dane">
+                            Edytuj
+                        </a>
+
                         <!-- Opcjonalnie: informacja dlaczego brak przycisku -->
                         <span class="text-muted small fst-italic"
                               th:if="${u.accountRole.name() == 'ADMIN'}">

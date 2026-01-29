@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(
+            pageTitle='Edycja użytkownika',
+            content=~{::content},
+            activeNav='admin-users'
+      )}">
+
+<div th:fragment="content">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Edycja użytkownika: <span th:text="${userLogin}" class="text-primary"></span></h1>
+        <a class="btn btn-outline-secondary" th:href="@{/admin/users}">Anuluj</a>
+    </div>
+
+    <div class="card card-body" style="max-width: 800px;">
+        <form th:action="@{|/admin/users/${userId}/edit|}" th:object="${form}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Imię</label>
+                    <input class="form-control" th:field="*{firstName}"
+                           th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nazwisko</label>
+                    <input class="form-control" th:field="*{lastName}"
+                           th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''">
+                    <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Telefon</label>
+                <input class="form-control" th:field="*{phone}"
+                       th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid' : ''">
+                <div class="invalid-feedback" th:errors="*{phone}"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Adres</label>
+                <textarea class="form-control" rows="3" th:field="*{address}"
+                          th:classappend="${#fields.hasErrors('address')} ? 'is-invalid' : ''"></textarea>
+                <div class="invalid-feedback" th:errors="*{address}"></div>
+            </div>
+
+            <button class="btn btn-primary w-100" type="submit">Zapisz zmiany</button>
+        </form>
+    </div>
+</div>
+</html>
