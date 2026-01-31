@@ -8,6 +8,6 @@ public class NeighborhoodLibraryApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(NeighborhoodLibraryApplication.class, args);
-	}
+    }
 
 }
