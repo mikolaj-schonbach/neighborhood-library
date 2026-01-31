@@ -4,7 +4,6 @@ import com.example.neighborhood_library.domain.*;
 import com.example.neighborhood_library.repo.LoanRepository;
 import com.example.neighborhood_library.repo.MessageRepository;
 import com.example.neighborhood_library.repo.ReservationRepository;
-import com.example.neighborhood_library.support.NotFoundException;
 import com.example.neighborhood_library.support.ReservationBlockedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package com.example.neighborhood_library.web.controller;
 
 import com.example.neighborhood_library.config.SecurityConfig;
-import com.example.neighborhood_library.domain.User; // Import
+// Import
 import com.example.neighborhood_library.service.AuthService;
 import com.example.neighborhood_library.service.CurrentUserService;
 import com.example.neighborhood_library.service.LibraryInfoService;

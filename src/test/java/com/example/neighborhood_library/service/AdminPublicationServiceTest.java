@@ -5,7 +5,6 @@ import com.example.neighborhood_library.repo.AuthorRepository;
 import com.example.neighborhood_library.repo.CategoryRepository;
 import com.example.neighborhood_library.repo.CopyRepository;
 import com.example.neighborhood_library.repo.PublicationRepository;
-import com.example.neighborhood_library.support.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

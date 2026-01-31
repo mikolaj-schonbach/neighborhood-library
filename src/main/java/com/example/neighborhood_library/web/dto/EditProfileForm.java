@@ -2,7 +2,6 @@ package com.example.neighborhood_library.web.dto;
 
 import com.example.neighborhood_library.domain.User;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public class EditProfileForm {
 

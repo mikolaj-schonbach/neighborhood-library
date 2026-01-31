@@ -4,7 +4,6 @@ import com.example.neighborhood_library.domain.*;
 import com.example.neighborhood_library.repo.LoanRepository;
 import com.example.neighborhood_library.repo.MessageRepository;
 import com.example.neighborhood_library.repo.ReservationRepository;
-import com.example.neighborhood_library.support.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
