@@ -148,7 +148,7 @@
         <version>3.3.1</version>
         <configuration>
           <configLocation>config/checkstyle/checkstyle.xml</configLocation>
-          <encoding>UTF-8</encoding>
+          <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
           <consoleOutput>true</consoleOutput>
           <failsOnError>true</failsOnError>
         </configuration>

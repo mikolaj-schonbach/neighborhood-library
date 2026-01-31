@@ -1,0 +1,18 @@
+# _typos.toml
+[default.extend-words]
+nowe = "nowe"
+Nowe = "Nowe"
+adres = "adres"
+Adres = "Adres"
+Numer = "Numer"
+autor = "autor"
+daty = "daty"
+Pn = "Pn"
+usera = "usera"
+tak = "tak"
+
+[files]
+extend-exclude = [
+    "**/target/**",
+    "**/.git/**"
+]
