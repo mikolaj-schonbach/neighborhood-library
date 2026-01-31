@@ -14,11 +14,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.security.test.context.support.WithMockUser; // <--- Import
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -39,14 +39,15 @@ class CatalogControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean private CatalogService catalogService;
-    @MockBean private CategoryRepository categoryRepository;
-    @MockBean private ReservationService reservationService;
+    @MockitoBean
+    private CatalogService catalogService;
+    @MockitoBean private CategoryRepository categoryRepository;
+    @MockitoBean private ReservationService reservationService;
 
     // --- Boilerplate dla GlobalControllerAdvice ---
-    @MockBean private LibraryInfoService libraryInfoService;
-    @MockBean private MessageService messageService;
-    @MockBean private CurrentUserService currentUserService;
+    @MockitoBean private LibraryInfoService libraryInfoService;
+    @MockitoBean private MessageService messageService;
+    @MockitoBean private CurrentUserService currentUserService;
 
     @BeforeEach
     void setUp() {

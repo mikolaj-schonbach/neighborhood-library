@@ -13,13 +13,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,12 +41,12 @@ class AdminLoansControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AdminLoanService adminLoanService;
 
     // --- Mocki dla GlobalControllerAdvice ---
-    @MockBean private MessageService messageService;
-    @MockBean private CurrentUserService currentUserService;
+    @MockitoBean private MessageService messageService;
+    @MockitoBean private CurrentUserService currentUserService;
 
     @Autowired
     private LibraryInfoService libraryInfoService;

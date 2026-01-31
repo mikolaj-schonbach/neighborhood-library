@@ -15,11 +15,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -42,12 +42,13 @@ class MyBooksControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean private CurrentUserService currentUserService;
-    @MockBean private ReservationService reservationService;
-    @MockBean private LoanRepository loanRepository;
+    @MockitoBean private CurrentUserService currentUserService;
+    @MockitoBean private ReservationService reservationService;
+    @MockitoBean
+    private LoanRepository loanRepository;
 
     // --- Mocki dla GlobalControllerAdvice ---
-    @MockBean private MessageService messageService;
+    @MockitoBean private MessageService messageService;
 
     @Autowired
     private LibraryInfoService libraryInfoService; // bezpieczny bean (żeby Thymeleaf nie dostawał null)

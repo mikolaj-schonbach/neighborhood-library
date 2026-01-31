@@ -15,9 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,14 +34,15 @@ class AdminDashboardControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean private UserRepository userRepository;
-    @MockBean private ReservationRepository reservationRepository;
-    @MockBean private LoanRepository loanRepository;
+    @MockitoBean
+    private UserRepository userRepository;
+    @MockitoBean private ReservationRepository reservationRepository;
+    @MockitoBean private LoanRepository loanRepository;
 
     // --- Mocki dla GlobalControllerAdvice ---
-    @MockBean private LibraryInfoService libraryInfoService;
-    @MockBean private MessageService messageService;
-    @MockBean private CurrentUserService currentUserService;
+    @MockitoBean private LibraryInfoService libraryInfoService;
+    @MockitoBean private MessageService messageService;
+    @MockitoBean private CurrentUserService currentUserService;
     // ---------------------------------------
 
     @BeforeEach
