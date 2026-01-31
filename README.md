@@ -73,7 +73,7 @@ Follow these instructions to set up the project on your local machine.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/your-username/neighborhood-library.git](https://github.com/your-username/neighborhood-library.git)
+    git clone [https://github.com/mikolaj-schonbach/neighborhood-library.git](https://github.com/mikolaj-schonbach/neighborhood-library.git)
     cd neighborhood-library
     ```
 
@@ -82,6 +82,10 @@ Follow these instructions to set up the project on your local machine.
     ```sql
     CREATE DATABASE neighborhood_library;
     ```
+    ```Execute DB_INIT.SQL and DB_FUNCTIONS.SQL to populate the database.```
+
+
+
 
 3.  **Configuration:**
     Navigate to `src/main/resources/application.properties` (or `application.yml`) and configure your database credentials:
@@ -89,7 +93,6 @@ Follow these instructions to set up the project on your local machine.
     spring.datasource.url=jdbc:postgresql://localhost:5432/neighborhood_library
     spring.datasource.username=your_postgres_user
     spring.datasource.password=your_postgres_password
-    spring.jpa.hibernate.ddl-auto=update
     ```
 
 4.  **Build the project:**
