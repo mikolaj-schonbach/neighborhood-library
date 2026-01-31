@@ -1,4 +1,4 @@
-package com.example.neighborhood_library;
+package com.example.neighborhood_library.e2e;
 
 
 import com.example.neighborhood_library.domain.AccountRole;
@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.Duration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public abstract class BaseSeleniumTest {
+public abstract class BaseSeleniumE2E {
 
     @LocalServerPort
     protected int port;

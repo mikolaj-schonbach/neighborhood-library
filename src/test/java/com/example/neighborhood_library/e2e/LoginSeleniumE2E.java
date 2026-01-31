@@ -1,5 +1,5 @@
 
-package com.example.neighborhood_library;
+package com.example.neighborhood_library.e2e;
 
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -12,7 +12,7 @@ import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LoginSeleniumTest extends BaseSeleniumTest {
+public class LoginSeleniumE2E extends BaseSeleniumE2E {
 
     @Test
     void shouldLoginSuccessfully() {
