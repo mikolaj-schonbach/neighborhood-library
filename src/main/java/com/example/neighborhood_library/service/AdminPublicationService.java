@@ -24,7 +24,9 @@ public class AdminPublicationService {
     public AdminPublicationService(CategoryRepository categoryRepository,
                                    PublicationRepository publicationRepository,
                                    AuthorRepository authorRepository,
-                                   CopyRepository copyRepository, CurrentUserService currentUserService, OperationService operationService) {
+                                   CopyRepository copyRepository,
+                                   CurrentUserService currentUserService,
+                                   OperationService operationService) {
         this.categoryRepository = categoryRepository;
         this.publicationRepository = publicationRepository;
         this.authorRepository = authorRepository;
@@ -197,7 +199,8 @@ public class AdminPublicationService {
                     .filter(t -> !t.isBlank())
                     .toList();
             if (tokens.size() < 2) {
-                throw new IllegalArgumentException("Niepoprawny autor: '" + p + "'. Użyj formatu: Imię Nazwisko; Imię Nazwisko");
+                throw new IllegalArgumentException("Niepoprawny autor: '" + p + "'. Użyj formatu: " +
+                    "Imię Nazwisko; Imię Nazwisko");
             }
             String lastName = tokens.get(tokens.size() - 1);
             String firstName = String.join(" ", tokens.subList(0, tokens.size() - 1));

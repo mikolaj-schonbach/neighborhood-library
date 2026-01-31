@@ -69,7 +69,7 @@ public class AdminReservationService {
         loan.setReservation(r);
         loan.setUser(r.getUser());
         loan.setCopy(r.getCopy());
-        loanRepository.saveAndFlush(loan); // DB trigger ustawi reservation=FULFILLED :contentReference[oaicite:6]{index=6}
+        loanRepository.saveAndFlush(loan); // DB trigger ustawi reservation=FULFILLED
 
         Message msg = new Message();
         msg.setUser(r.getUser());

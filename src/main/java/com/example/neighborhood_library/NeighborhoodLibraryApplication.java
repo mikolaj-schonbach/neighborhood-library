@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class NeighborhoodLibraryApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(NeighborhoodLibraryApplication.class, args);
+        SpringApplication.run(NeighborhoodLibraryApplication.class, args);
 	}
 
 }

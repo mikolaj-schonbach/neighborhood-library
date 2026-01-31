@@ -22,7 +22,9 @@ public class AdminUsersController {
     private final UserAdminService userAdminService;
     private final AuthService authService;
 
-    public AdminUsersController(UserRepository userRepository, UserAdminService userAdminService, AuthService authService) {
+    public AdminUsersController(UserRepository userRepository,
+                                UserAdminService userAdminService,
+                                AuthService authService) {
         this.userRepository = userRepository;
         this.userAdminService = userAdminService;
         this.authService = authService;

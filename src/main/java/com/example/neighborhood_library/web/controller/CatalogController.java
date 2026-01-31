@@ -15,7 +15,9 @@ public class CatalogController {
     private final ReservationService reservationService;
     private final CategoryRepository categoryRepository;
 
-    public CatalogController(CatalogService catalogService, ReservationService reservationService, CategoryRepository categoryRepository) {
+    public CatalogController(CatalogService catalogService,
+                             ReservationService reservationService,
+                             CategoryRepository categoryRepository) {
         this.catalogService = catalogService;
         this.reservationService = reservationService;
         this.categoryRepository = categoryRepository;

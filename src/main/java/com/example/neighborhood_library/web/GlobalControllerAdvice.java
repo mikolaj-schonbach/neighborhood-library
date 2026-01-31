@@ -14,7 +14,9 @@ public class GlobalControllerAdvice {
     private final MessageService messageService;
     private final CurrentUserService currentUserService;
 
-    public GlobalControllerAdvice(LibraryInfoService libraryInfoService, MessageService messageService, CurrentUserService currentUserService) {
+    public GlobalControllerAdvice(LibraryInfoService libraryInfoService,
+                                  MessageService messageService,
+                                  CurrentUserService currentUserService) {
         this.libraryInfoService = libraryInfoService;
         this.messageService = messageService;
         this.currentUserService = currentUserService;

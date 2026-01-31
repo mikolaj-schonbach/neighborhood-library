@@ -66,7 +66,8 @@ public class ReservationService {
             // DB ma triggery i wyjątki (limit 3, status usera, status kopii) — mapujemy na czytelny komunikat
             String msg = (ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage());
             if (msg != null && msg.toLowerCase().contains("limit exceeded")) {
-                throw new ReservationBlockedException("Limit przekroczony: maksymalnie 3 aktywne sztuki (rezerwacje + wypożyczenia).");
+                throw new ReservationBlockedException("Limit przekroczony: maksymalnie 3 aktywne sztuki " +
+                    "(rezerwacje + wypożyczenia).");
             }
             if (msg != null && msg.toLowerCase().contains("not active")) {
                 throw new ReservationBlockedException("Twoje konto nie jest aktywne — rezerwacja niedozwolona.");

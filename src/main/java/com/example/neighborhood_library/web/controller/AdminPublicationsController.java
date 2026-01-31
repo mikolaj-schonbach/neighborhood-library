@@ -26,7 +26,8 @@ public class AdminPublicationsController {
     private final PublicationRepository publicationRepository;
     private final AdminPublicationService adminPublicationService;
 
-    public AdminPublicationsController(CategoryRepository categoryRepository, PublicationRepository publicationRepository,
+    public AdminPublicationsController(CategoryRepository categoryRepository,
+                                       PublicationRepository publicationRepository,
                                        AdminPublicationService adminPublicationService) {
         this.categoryRepository = categoryRepository;
         this.publicationRepository = publicationRepository;

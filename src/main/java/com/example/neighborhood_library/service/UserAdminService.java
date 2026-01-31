@@ -18,7 +18,10 @@ public class UserAdminService {
     private final CurrentUserService currentUserService;
     private final OperationService operationService;
 
-    public UserAdminService(UserRepository userRepository, MessageRepository messageRepository, CurrentUserService currentUserService, OperationService operationService) {
+    public UserAdminService(UserRepository userRepository,
+                            MessageRepository messageRepository,
+                            CurrentUserService currentUserService,
+                            OperationService operationService) {
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
         this.currentUserService = currentUserService;

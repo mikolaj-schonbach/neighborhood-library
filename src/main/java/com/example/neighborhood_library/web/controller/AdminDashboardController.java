@@ -35,7 +35,8 @@ public class AdminDashboardController {
         // Liczniki do kafelków
         model.addAttribute("inactiveUsersCount", userRepository.countByStatus(UserStatus.INACTIVE));
         model.addAttribute("activeReservationsCount", reservationRepository.countByStatus(ReservationStatus.ACTIVE));
-        model.addAttribute("overdueLoansCount", loanRepository.countByDueDateBeforeAndReturnedAtIsNull(LocalDate.now()));
+        model.addAttribute("overdueLoansCount",
+            loanRepository.countByDueDateBeforeAndReturnedAtIsNull(LocalDate.now()));
 
         return "admin/dashboard";
     }
