@@ -1,0 +1,183 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  merge_group:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17 (Temurin) + cache Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Use Maven Wrapper
+        id: mvn
+        run: |
+          chmod +x ./mvnw
+          echo "cmd=./mvnw" >> "$GITHUB_OUTPUT"
+
+      # --- TYPOS (literówki) ---
+      - name: Typo check (typos)
+        id: typos
+        continue-on-error: true
+        uses: crate-ci/typos@v1
+        with:
+          # Ograniczam do źródeł, żeby polskie docsy nie generowały fałszywych alarmów.
+          files: ./src
+
+      # --- FORMAT (Spotless) ---
+      - name: Formatting check (Spotless)
+        id: spotless
+        continue-on-error: true
+        run: |
+          "${{ steps.mvn.outputs.cmd }}" -B -ntp -DskipTests spotless:check
+
+      # --- LINT (Checkstyle) ---
+      - name: Lint (Checkstyle)
+        id: checkstyle
+        continue-on-error: true
+        run: |
+          "${{ steps.mvn.outputs.cmd }}" -B -ntp -DskipTests checkstyle:check
+
+      # --- UNIT TESTS (bez verify, żeby nie odpalać Failsafe/E2E) ---
+      - name: Unit tests
+        id: tests
+        continue-on-error: true
+        run: |
+          "${{ steps.mvn.outputs.cmd }}" -B -ntp test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # --- Podsumowanie (job summary + plik do komentarza) ---
+      - name: Build summary (job + PR comment body)
+        id: summary
+        if: always()
+        env:
+          TYPOS_OUTCOME: ${{ steps.typos.outcome }}
+          SPOTLESS_OUTCOME: ${{ steps.spotless.outcome }}
+          CHECKSTYLE_OUTCOME: ${{ steps.checkstyle.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          set -euo pipefail
+
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # Zlicz testy z raportów Surefire (XML)
+
+          read -r TEST_RUN TEST_FAIL TEST_ERR TEST_SKIP < <(python3 - <<'PY'
+          import glob
+          import xml.etree.ElementTree as ET
+
+          files = glob.glob("**/target/surefire-reports/TEST-*.xml", recursive=True)
+          total = {"tests":0,"failures":0,"errors":0,"skipped":0}
+          for f in files:
+              try:
+                  root = ET.parse(f).getroot()
+                  for k in total:
+                      v = root.attrib.get(k)
+                      total[k] += int(v) if v is not None else 0
+              except Exception:
+                  pass
+
+          print(total["tests"], total["failures"], total["errors"], total["skipped"])
+          PY)
+
+          # Job Summary
+          {
+            echo "## PR Quality Gate – podsumowanie"
+            echo ""
+            echo "- **Typos:** \`$TYPOS_OUTCOME\`"
+            echo "- **Spotless (format):** \`$SPOTLESS_OUTCOME\`"
+            echo "- **Checkstyle (lint):** \`$CHECKSTYLE_OUTCOME\`"
+            echo "- **Unit tests:** \`$TESTS_OUTCOME\` (run=$TEST_RUN, failures=$TEST_FAIL, errors=$TEST_ERR, skipped=$TEST_SKIP)"
+            echo "- **Run:** $RUN_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # PR comment body (aktualizowany)
+          cat > pr-ci-summary.md <<EOF
+          <!-- pr-quality-gate -->
+          ### CI status zmian
+
+          - **Typos:** \`$TYPOS_OUTCOME\`
+          - **Spotless (format):** \`$SPOTLESS_OUTCOME\`
+          - **Checkstyle (lint):** \`$CHECKSTYLE_OUTCOME\`
+          - **Unit tests:** \`$TESTS_OUTCOME\` (run=$TEST_RUN, failures=$TEST_FAIL, errors=$TEST_ERR, skipped=$TEST_SKIP)
+          - **Workflow run:** $RUN_URL
+          EOF
+
+      # Komentarz tylko dla PR i tylko gdy PR jest z tego samego repo (nie fork)
+      - name: Find existing PR comment
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        id: find_comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "<!-- pr-quality-gate -->"
+
+      - name: Create/Update PR comment
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find_comment.outputs.comment-id }}
+          body-path: pr-ci-summary.md
+          edit-mode: replace
+
+      # Finalnie job ma być FAIL, jeśli którykolwiek check nie jest success
+      - name: Fail workflow if checks failed
+        if: always()
+        env:
+          TYPOS_OUTCOME: ${{ steps.typos.outcome }}
+          SPOTLESS_OUTCOME: ${{ steps.spotless.outcome }}
+          CHECKSTYLE_OUTCOME: ${{ steps.checkstyle.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+        run: |
+          set -euo pipefail
+
+          fail=0
+          for o in "$TYPOS_OUTCOME" "$SPOTLESS_OUTCOME" "$CHECKSTYLE_OUTCOME" "$TESTS_OUTCOME"; do
+            if [ "$o" != "success" ]; then
+              fail=1
+            fi
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo "Quality Gate failed: typos=$TYPOS_OUTCOME, spotless=$SPOTLESS_OUTCOME, checkstyle=$CHECKSTYLE_OUTCOME, tests=$TESTS_OUTCOME" >&2
+            exit 1
+          fi
