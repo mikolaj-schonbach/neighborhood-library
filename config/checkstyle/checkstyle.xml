@@ -19,11 +19,11 @@
   <module name="TreeWalker">
     <!-- importy -->
     <module name="UnusedImports"/>
-    <module name="AvoidStarImport"/>
+
     <module name="RedundantImport"/>
 
     <!-- nawiasy/klamry -->
-    <module name="NeedBraces"/>
+
 
 
     <module name="EmptyStatement"/>
