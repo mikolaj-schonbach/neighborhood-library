@@ -116,24 +116,14 @@
         <version>2.43.0</version>
         <configuration>
           <java>
-            <googleJavaFormat>
-              <version>1.22.0</version>
-            </googleJavaFormat>
+            <includes>
+              <include>src/main/java/**/*.java</include>
+              <include>src/test/java/**/*.java</include>
+            </includes>
             <removeUnusedImports/>
             <trimTrailingWhitespace/>
             <endWithNewline/>
           </java>
-
-          <!-- opcjonalnie: formatowanie XML (np. pom.xml) -->
-          <formats>
-            <format>
-              <includes>
-                <include>pom.xml</include>
-              </includes>
-              <trimTrailingWhitespace/>
-              <endWithNewline/>
-            </format>
-          </formats>
         </configuration>
         <executions>
           <!-- To NIE formatuje automatycznie na buildzie (żeby nie psuć CI),

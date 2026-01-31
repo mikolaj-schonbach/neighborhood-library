@@ -24,22 +24,18 @@
 
     <!-- nawiasy/klamry -->
     <module name="NeedBraces"/>
-    <module name="LeftCurly"/>
-    <module name="RightCurly"/>
+
+
     <module name="EmptyStatement"/>
 
     <!-- whitespace -->
-    <module name="WhitespaceAround"/>
-    <module name="NoWhitespaceBefore"/>
-    <module name="NoWhitespaceAfter"/>
+
 
     <!-- podstawowe praktyki -->
     <module name="EqualsHashCode"/>
     <module name="MissingSwitchDefault"/>
     <module name="ModifierOrder"/>
     <module name="AvoidNestedBlocks"/>
-    <module name="FinalParameters">
-      <property name="ignorePrimitiveTypes" value="false"/>
-    </module>
+
   </module>
 </module>
