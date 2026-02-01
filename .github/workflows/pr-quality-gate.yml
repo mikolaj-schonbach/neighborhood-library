@@ -84,6 +84,24 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+      # --- BUILD (package) ---
+      - name: Build JAR (package)
+        id: package
+        continue-on-error: true
+        run: |
+          "${{ steps.mvn.outputs.cmd }}" -B -ntp -DskipTests package
+
+      - name: Upload application package
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: |
+            target/*.jar
+            !target/*.jar.original
+          if-no-files-found: error
+          retention-days: 7
+
       # --- Podsumowanie (job summary + plik do komentarza) ---
       - name: Build summary (job + PR comment body)
         id: summary
