@@ -156,7 +156,7 @@ public class AdminPublicationsController {
     public String deleteCopy(@PathVariable("id") Long id, @PathVariable("copyId") Long copyId, RedirectAttributes ra) {
         try {
             adminPublicationService.deleteCopy(copyId);
-            ra.addFlashAttribute("successMessage", "Egzemplarz usunięty (soft delete).");
+            ra.addFlashAttribute("successMessage", "Egzemplarz usunięty.");
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", "Nie można usunąć: " + e.getMessage());
         }

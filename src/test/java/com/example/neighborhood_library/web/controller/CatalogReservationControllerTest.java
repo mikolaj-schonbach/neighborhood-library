@@ -60,14 +60,21 @@ class CatalogReservationControllerTest {
     @Test
     @WithMockUser(username = "user1", roles = "USER")
     void reserve_ShouldCreateReservation_AndRedirectWithSuccessFlash_WhenOk() throws Exception {
+        // given
+        var reservation = mock(com.example.neighborhood_library.domain.Reservation.class, RETURNS_DEEP_STUBS);
+        when(reservation.getCopy().getPublication().getTitle()).thenReturn("Pan Tadeusz");
+        when(reservationService.reservePublication(10L, 100L)).thenReturn(reservation);
+
+        // when + then
         mockMvc.perform(post("/catalog/10/reserve").with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/catalog/10"))
-                .andExpect(flash().attribute("success", "Rezerwacja utworzona ✅"));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/catalog/10"))
+            .andExpect(flash().attribute("success", "Dokonano rezerwacji publikacji: Pan Tadeusz"));
 
         verify(reservationService).reservePublication(10L, 100L);
         verifyNoMoreInteractions(reservationService);
     }
+
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")

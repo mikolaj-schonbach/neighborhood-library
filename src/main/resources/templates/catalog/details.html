@@ -12,7 +12,15 @@
             <h1 class="h3 mb-1" th:text="${publication.title}"></h1>
             <div class="text-muted" th:text="${publication.authors}"></div>
         </div>
-        <a class="btn btn-outline-secondary" th:href="@{/catalog}">← Powrót</a>
+        <a class="btn btn-outline-secondary" th:href="@{/catalog}">← Powrót do Katalogu publikacji</a>
+    </div>
+
+    <!-- Komunikaty -->
+    <div class="alert alert-success" th:if="${success}">
+        <span th:text="${success}"></span>
+    </div>
+    <div class="alert alert-danger" th:if="${error}">
+        <span th:text="${error}"></span>
     </div>
 
     <div class="card card-body mb-4">

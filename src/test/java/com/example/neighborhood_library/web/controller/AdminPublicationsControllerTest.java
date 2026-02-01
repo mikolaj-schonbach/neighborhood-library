@@ -391,7 +391,7 @@ class AdminPublicationsControllerTest {
         mockMvc.perform(post("/admin/publications/5/copies/99/delete").with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/publications/5/edit"))
-                .andExpect(flash().attribute("successMessage", "Egzemplarz usunięty (soft delete)."));
+                .andExpect(flash().attribute("successMessage", "Egzemplarz usunięty."));
 
         verify(adminPublicationService).deleteCopy(99L);
     }

@@ -70,7 +70,8 @@ public class ReservationService {
                     "(rezerwacje + wypożyczenia).");
             }
             if (msg != null && msg.toLowerCase().contains("not active")) {
-                throw new ReservationBlockedException("Twoje konto nie jest aktywne — rezerwacja niedozwolona.");
+                throw new ReservationBlockedException("Twoje konto nie jest aktywne — rezerwacja niedozwolona. " +
+                    "Skontaktuj się z biblioteką w celu wyjaśnienia.");
             }
             if (msg != null && msg.toLowerCase().contains("not available")) {
                 throw new ReservationBlockedException("Ten egzemplarz nie jest już dostępny.");

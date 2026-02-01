@@ -98,7 +98,7 @@
                                       th:classappend="${c.status.name() == 'AVAILABLE' ? 'text-bg-success' :
                                                        (c.status.name() == 'LOANED' ? 'text-bg-info' :
                                                        (c.status.name() == 'RESERVED' ? 'text-bg-warning' : 'text-bg-secondary'))}"
-                                      th:text="${c.status}">
+                                      th:text="${c.status.plLabel}">
                                 </span>
                             </td>
                             <td class="text-end">
@@ -107,7 +107,7 @@
                                       method="post">
                                     <button class="btn btn-sm btn-outline-danger" type="submit"
                                             onclick="return confirm('Czy na pewno chcesz usunąć ten egzemplarz?')">
-                                        ×
+                                        Usuń
                                     </button>
                                 </form>
                             </td>

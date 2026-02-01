@@ -9,7 +9,7 @@
 
 <div th:fragment="content">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h1 class="h3 mb-0">Katalog</h1>
+        <h1 class="h3 mb-0">Katalog publikacji</h1>
         <a class="btn btn-outline-secondary"
            sec:authorize="hasRole('ADMIN')"
            th:href="@{/admin/publications/new}">

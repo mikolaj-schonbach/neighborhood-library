@@ -98,10 +98,10 @@ public class AdminPublicationService {
                                 PublicationKind kind, Long categoryId, String isbn, Short year) {
 
         Publication p = publicationRepository.findByIdWithDetails(publicationId)
-                .orElseThrow(() -> new NotFoundException("Publikacja nie istnieje"));
+            .orElseThrow(() -> new NotFoundException("Publikacja nie istnieje"));
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Kategoria nie istnieje"));
+            .orElseThrow(() -> new NotFoundException("Kategoria nie istnieje"));
 
         p.setTitle(title.trim());
         p.setKind(kind);
@@ -113,20 +113,48 @@ public class AdminPublicationService {
 
         p.setYear(year);
 
-        // Aktualizacja autorów (uproszczona: czyścimy i dodajemy na nowo)
-        // W produkcyjnym kodzie lepiej byłoby sprawdzać diff, żeby nie usuwać ID
-        p.getPublicationAuthors().clear();
+        // --- Autorzy: aktualizacja przez "diff" zamiast clear()+add ---
 
+        // 1) Zamień authorsRaw -> lista encji Author (find-or-create), zachowując kolejność z inputu
         List<AuthorName> names = parseAuthors(authorsRaw);
+
+        List<Author> desiredAuthors = new ArrayList<>(names.size());
         for (AuthorName n : names) {
             Author a = authorRepository.findByFirstNameAndLastName(n.firstName(), n.lastName())
-                    .orElseGet(() -> {
-                        Author created = new Author();
-                        created.setFirstName(n.firstName());
-                        created.setLastName(n.lastName());
-                        return authorRepository.save(created);
-                    });
-            p.addAuthor(a);
+                .orElseGet(() -> {
+                    Author created = new Author();
+                    created.setFirstName(n.firstName());
+                    created.setLastName(n.lastName());
+                    return authorRepository.save(created);
+                });
+            desiredAuthors.add(a);
+        }
+
+        // 2) Zbiór ID autorów docelowych
+        Set<Long> desiredAuthorIds = desiredAuthors.stream()
+            .map(Author::getId)
+            .collect(java.util.stream.Collectors.toSet());
+
+        // 3) Usuń tylko te powiązania PublicationAuthor, których nie ma w desired
+        // (bez clear(), żeby nie oznaczać wszystkich jako REMOVED)
+        Iterator<PublicationAuthor> it = p.getPublicationAuthors().iterator();
+        while (it.hasNext()) {
+            PublicationAuthor pa = it.next();
+            Long existingAuthorId = pa.getAuthor().getId();
+            if (!desiredAuthorIds.contains(existingAuthorId)) {
+                it.remove(); // przy orphanRemoval usuwa rekord łączący; bez niego zrywa powiązanie
+            }
+        }
+
+        // 4) Dodaj brakujące powiązania
+        Set<Long> existingAuthorIds = p.getPublicationAuthors().stream()
+            .map(pa -> pa.getAuthor().getId())
+            .collect(java.util.stream.Collectors.toSet());
+
+        for (Author a : desiredAuthors) {
+            if (!existingAuthorIds.contains(a.getId())) {
+                p.addAuthor(a);
+            }
         }
 
         publicationRepository.save(p);
@@ -134,6 +162,7 @@ public class AdminPublicationService {
         // Log
         operationService.logAction(currentUserService.requireCurrentUser(), null, "PUBLICATION_UPDATED", null);
     }
+
 
     @Transactional
     public void addCopy(Long publicationId) {
